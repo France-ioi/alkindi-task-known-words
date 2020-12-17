@@ -33,7 +33,7 @@ const referenceFrequencies = [
 
 function applySubstitutionToFreq (substitution, frequencyAnalysis, alphabet) {
   let newFrequencyAnalysis = alphabet.split('').map(() => 0);
-  for (let {rank, editable} of substitution.cells) {
+  for (let {rank, editable} of substitution) {
     const newPosition = alphabet.indexOf(editable);
     newFrequencyAnalysis[newPosition] += frequencyAnalysis[rank];
   }

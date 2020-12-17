@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {put, select, takeEvery} from 'redux-saga/effects';
 import SubstitutionEditView from './components/SubstitutionEditView';
-import {wrapAround, editSubstitutionCell, lockSubstitutionCell, loadSubstitution, memoize} from './utils';
+import {wrapAround, markSubstitutionConflicts, lockSubstitutionCell, loadSubstitution, memoize} from './utils';
 
 function appInitReducer (state, _action) {
   return {
@@ -34,7 +34,7 @@ function substitutionCellEditMovedReducer (state, {payload: {cellMove}}) {
   let cell;
   do {
     cellRank = wrapAround(cellRank + cellMove, alphabet.length);
-    cell = substitution.cells[cellRank];
+    cell = substitution[cellRank];
     /* If we looped back to the starting point, the move is impossible. */
     if (cellStop === cellRank) return state;
   } while (cell.hint || cell.locked);
@@ -45,20 +45,21 @@ function substitutionCellEditCancelledReducer (state, _action) {
   return update(state, {editingSubstitution: {$set: {}}});
 }
 
-function substitutionCellCharChangedReducer (state, {payload: {rank, symbol, moveToNext}}) {
-  let {taskData: {alphabet}, substitution} = state;
-  if (symbol.length !== 1 || -1 === alphabet.indexOf(symbol)) {
-    symbol = null;
-  }
-  const newSubstitution = editSubstitutionCell(alphabet, substitution, rank, symbol);
+function substitutionCellCharChangedReducer (state, {payload: {rank, position, symbol}}) {
+  let {taskData: {symbols, version: {symbolsPerLetterMax}}, substitution} = state;
+  if (null === symbol && null !== position) {
+    const newSubstitution = update(substitution, {[rank]: {editable: {$splice: [[position, 1]]}}});
 
-  const newState = update(state, {substitution: {$set: newSubstitution}});
-
-  if (null !== symbol && moveToNext) {
-    return substitutionCellEditMovedReducer(newState, {payload: {cellMove: 1}});
+    return update(state, {substitution: {$set: markSubstitutionConflicts(newSubstitution)}});
   }
 
-  return newState;
+  if (null === symbol || -1 === symbols.indexOf(symbol) || substitution[rank].editable.length >= symbolsPerLetterMax) {
+    return state;
+  }
+
+  const newSubstitution = update(substitution, {[rank]: {editable: {$push: [symbol]}}});
+
+  return update(state, {substitution: {$set: markSubstitutionConflicts(newSubstitution)}});
 }
 
 function substitutionCellLockChangedReducer (state, {payload: {rank, isLocked}}) {
@@ -87,7 +88,7 @@ function SubstitutionSelector (state) {
     substitution,
     editingSubstitution,
     pinnedSubstitution,
-    taskData: {alphabet, usedSymbols},
+    taskData: {alphabet, symbols, version: {symbolsPerLetterMax}},
   } = state;
 
   return {
@@ -96,13 +97,12 @@ function SubstitutionSelector (state) {
     decipheredCellEditCancelled,
     substitution,
     alphabet,
-    usedSymbols,
+    symbols,
     editingSubstitution,
     pinnedSubstitution,
+    symbolsPerLetterMax,
   };
 }
-
-const emptyEditing = {};
 
 class SubstitutionBundleView extends React.PureComponent {
   constructor (props) {
@@ -113,20 +113,20 @@ class SubstitutionBundleView extends React.PureComponent {
     };
   }
 
-  nonUsedLetters = memoize((substitution, alphabet) => {
-    const usedLetters = [];
+  nonUsedSymbols = memoize((substitution, alphabet, symbols) => {
+    const usedSymbols = [];
     for (let i = 0; i < alphabet.length; i++) {
-      const letter = substitution.cells[i].editable;
-      if (letter) {
-        usedLetters.push(letter);
+      const symbols = substitution[i].editable;
+      for (let symbol of symbols) {
+        usedSymbols.push(symbol);
       }
     }
 
-    return alphabet.split('').filter(letter => usedLetters.indexOf(letter) === -1);
+    return symbols.split('').filter(symbol => usedSymbols.indexOf(symbol) === -1);
   });
 
   render () {
-    const {alphabet, substitution, editingSubstitution, pinnedSubstitution} = this.props;
+    const {alphabet, substitution, editingSubstitution, pinnedSubstitution, symbols, symbolsPerLetterMax} = this.props;
 
     return (
         <div>
@@ -136,10 +136,10 @@ class SubstitutionBundleView extends React.PureComponent {
                 <SubstitutionEditView
                   key="pinned"
                   substitution={substitution}
-                  substitutionIndex={pinnedSubstitution}
-                  nonUsedLetters={this.nonUsedLetters(substitution, alphabet)}
+                  nonUsedSymbols={this.nonUsedSymbols(substitution, alphabet, symbols)}
                   alphabet={alphabet}
                   editing={editingSubstitution}
+                  symbolsPerLetterMax={symbolsPerLetterMax}
                   pinned
                   onChangeChar={this.onChangeChar}
                   onChangeLocked={this.onChangeLocked}
@@ -157,9 +157,10 @@ class SubstitutionBundleView extends React.PureComponent {
           >
             <SubstitutionEditView
               substitution={substitution}
-              nonUsedLetters={this.nonUsedLetters(substitution, alphabet)}
+              nonUsedSymbols={this.nonUsedSymbols(substitution, alphabet, symbols)}
               alphabet={alphabet}
               editing={editingSubstitution}
+              symbolsPerLetterMax={symbolsPerLetterMax}
               onChangeChar={this.onChangeChar}
               onChangeLocked={this.onChangeLocked}
               onEditingStarted={this.onEditingStarted}
@@ -178,15 +179,14 @@ class SubstitutionBundleView extends React.PureComponent {
   onEditingCancelled = () => {
     this.props.dispatch({type: this.props.substitutionCellEditCancelled});
   };
-  onChangeChar = (rank, symbol, moveToNext = true) => {
-    symbol = symbol.toUpperCase();
-    this.props.dispatch({type: this.props.substitutionCellCharChanged, payload: {rank, symbol, moveToNext}});
+  onChangeChar = (rank, position, symbol, moveToNext = true) => {
+    this.props.dispatch({type: this.props.substitutionCellCharChanged, payload: {rank, position, symbol, moveToNext}});
   };
   onChangeLocked = (rank, isLocked) => {
     this.props.dispatch({type: this.props.substitutionCellLockChanged, payload: {rank, isLocked}});
   };
-  onEditingMoved = (substitutionMove, cellMove) => {
-    this.props.dispatch({type: this.props.substitutionCellEditMoved, payload: {substitutionMove, cellMove}});
+  onEditingMoved = (cellMove) => {
+    this.props.dispatch({type: this.props.substitutionCellEditMoved, payload: {cellMove}});
   };
   onPinSubstitution = () => {
     this.props.dispatch({type: this.props.substitutionPinned});

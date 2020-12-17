@@ -125,7 +125,7 @@ function generateSubstitution (rng0, symbolsByLetter) {
 
   return {
     substitution,
-    usedSymbols: symbols.substring(0, totalSymbolsToUse),
+    symbols: symbols.substring(0, totalSymbolsToUse),
   };
 }
 
@@ -161,6 +161,7 @@ const versions = {
     clearTextLength: 400,
     symbolsPerLine: 35,
     extractedWordsCount: 40,
+    symbolsPerLetterMax: 1,
     hints: false,
     frequencyAnalysis: false,
     explanation: 'Bienvenue sur ce nouveau sujet 2 ! Il est en cours de création',
@@ -181,7 +182,7 @@ function generateTaskData (task) {
 
   const rng0 = seedrandom(task.random_seed + 16);
 
-  const {substitution, usedSymbols} = generateSubstitution(rng0, new Array(26).fill(1));
+  const {substitution, symbols} = generateSubstitution(rng0, new Array(26).fill(1));
 
   const clearText = generate(rng0, clearTextLength, clearTextLength + 20, true);
 
@@ -206,7 +207,7 @@ function generateTaskData (task) {
   const publicData = {
     alphabet,
     cipherTextLines,
-    usedSymbols,
+    symbols,
     hints,
     clearWords,
     version: versions[version]

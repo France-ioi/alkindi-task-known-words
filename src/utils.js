@@ -6,35 +6,26 @@ export function loadSubstitution (alphabet, initialValues) {
   cells.forEach((cell, cellIndex) => {
     $cells[cellIndex] = {
       rank: cellIndex,
-      editable: initialValues && initialValues[cellIndex] ? initialValues[cellIndex] : null,
+      editable: initialValues && initialValues[cellIndex] ? initialValues[cellIndex] : [],
       locked: false,
       conflict: false,
     };
   });
 
-  let substitution = {
-    alphabet,
-    cells: $cells,
-  };
-  substitution = markSubstitutionConflicts(alphabet, substitution);
+  let substitution = $cells;
+  substitution = markSubstitutionConflicts(substitution);
 
   return substitution;
 }
 
-export function editSubstitutionCell (alphabet, substitution, rank, symbol) {
-  substitution = update(substitution, {cells: {[rank]: {editable: {$set: symbol}}}});
-
-  return markSubstitutionConflicts(alphabet, substitution);
-}
-
 export function lockSubstitutionCell (substitution, rank, locked) {
-  return update(substitution, {cells: {[rank]: {locked: {$set: locked}}}});
+  return update(substitution, {[rank]: {locked: {$set: locked}}});
 }
 
-function markSubstitutionConflicts (alphabet, substitution) {
+export function markSubstitutionConflicts (substitution) {
   const counts = new Map();
   const changes = {};
-  for (let {rank, editable, conflict} of substitution.cells) {
+  for (let {rank, editable, conflict} of substitution) {
     if (conflict) {
       changes[rank] = {conflict: {$set: false}};
     }
@@ -54,7 +45,7 @@ function markSubstitutionConflicts (alphabet, substitution) {
     }
   }
 
-  return update(substitution, {cells: changes});
+  return update(substitution, changes);
 }
 
 export function applySubstitutions (substitutions, rank) {
@@ -71,25 +62,6 @@ export function wrapAround (value, mod) {
   return ((value % mod) + mod) % mod;
 }
 
-export function applySubstitution (substitution, result) {
-  let rank = result.rank, cell;
-  cell = substitution.cells[rank];
-  rank = substitution.backward[rank];
-  result.rank = rank;
-  if (cell) {
-    result.trace.push(cell);
-    if (cell.locked) {
-      result.locked = true;
-    }
-    if (cell.hint) {
-      result.isHint = true;
-    }
-    if (cell.isConflict) {
-      result.isConflict = true;
-    }
-  }
-}
-
 export function applySubstitutionToText (substitution, currentCipherText, alphabet) {
   return currentCipherText.map(({value, locked}) => {
     if (null === value) {
@@ -101,7 +73,7 @@ export function applySubstitutionToText (substitution, currentCipherText, alphab
       throw 'Letter not found in alphabet: ' + value;
     }
 
-    const cell = substitution.cells[position];
+    const cell = substitution[position];
     if (cell.editable) {
       const newLetter = cell.editable;
       return {

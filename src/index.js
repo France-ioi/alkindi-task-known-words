@@ -95,7 +95,7 @@ function getTaskAnswer (state) {
   });
 
   const answerState = {
-    substitutions: substitutions.map(substitution => substitution.cells.map(cell => cell.editable)),
+    substitutions: substitutions.map(substitution => substitution.map(cell => cell.editable)),
     appliedSubstitutions: appliedSubstitutions,
     decipheredLetters,
   };

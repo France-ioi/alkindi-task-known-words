@@ -5,14 +5,14 @@ import {DraggableUnusedLetter} from "./DraggableUnusedLetter";
 
 export default class SubstitutionEditView extends React.PureComponent {
   render () {
-    const {alphabet, substitution, editing, nonUsedLetters, pinned} = this.props;
+    const {alphabet, substitution, editing, nonUsedSymbols, pinned, symbolsPerLetterMax} = this.props;
 
     return (
       <div style={{marginTop: "10px", position: 'relative'}}>
         <div style={{width: "100%", position: "relative"}}>
           <div className="substitution-letters">
             {range(0, alphabet.length).map(rank => {
-              const {editable, locked, conflict, hint} = substitution.cells[rank];
+              const {editable, locked, conflict, hint} = substitution[rank];
               const isActive = false;
               const isEditing = editing.cellRank === rank && editing.pinned === pinned && !locked && !hint;
               const isLast = alphabet.length === rank + 1;
@@ -23,6 +23,7 @@ export default class SubstitutionEditView extends React.PureComponent {
                   key={rank} rank={rank} isLast={isLast}
                   staticChar={staticChar} editRank={rank}
                   pinned={pinned}
+                  symbolsPerLetterMax={symbolsPerLetterMax}
                   editableChar={editable} isLocked={locked} isHint={hint} isConflict={conflict}
                   isEditing={isEditing} isActive={isActive} highlighted={false}
                   onChangeChar={this.props.onChangeChar}
@@ -41,7 +42,7 @@ export default class SubstitutionEditView extends React.PureComponent {
             Symboles restants
           </div>
           <div className="non-used-letters">
-            {nonUsedLetters.length ? nonUsedLetters.map((letter, index) => (
+            {nonUsedSymbols.length ? nonUsedSymbols.map((letter, index) => (
               <DraggableUnusedLetter key={index} letter={letter}/>
             )) : 'Aucune'}
           </div>

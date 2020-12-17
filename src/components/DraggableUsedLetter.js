@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {useDrag} from 'react-dnd';
 
-export const DraggableUsedLetter = ({isConflict, isEditing, isLocked, keyDown, cellChanged, editableChar, startEditing, substitutionIndex, rank}) => {
+export const DraggableUsedLetter = ({isConflict, isLocked, cellChanged, editableChar, startEditing, rank, position}) => {
   const ref = useRef(null);
 
   const refInput = React.createRef();
@@ -16,7 +16,7 @@ export const DraggableUsedLetter = ({isConflict, isEditing, isLocked, keyDown, c
   const canDrag = editableChar && !isLocked;
 
   const [{isDragging}, drag] = useDrag({
-    item: {type: 'used-letter', letter: editableChar, substitutionIndex, rank},
+    item: {type: 'used-letter', letter: editableChar, rank, position},
     canDrag,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
@@ -24,7 +24,7 @@ export const DraggableUsedLetter = ({isConflict, isEditing, isLocked, keyDown, c
     end: (item, monitor) => {
       const didDrop = monitor.didDrop();
       if (!didDrop) {
-        cellChanged('');
+        cellChanged(null);
       }
     },
   });
@@ -45,9 +45,7 @@ export const DraggableUsedLetter = ({isConflict, isEditing, isLocked, keyDown, c
       onClick={startEditing}
       style={{opacity}}
     >
-      {isEditing
-        ? <input ref={refInput} onChange={() => cellChanged(refInput.current.value.substr(-1))} onKeyDown={keyDown} type='text' value={editableChar || ''} />
-        : (editableChar || '\u00A0')}
+      {editableChar || '\u00A0'}
     </div>
   );
 };

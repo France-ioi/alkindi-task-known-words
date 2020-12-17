@@ -2,6 +2,7 @@ import React, {useRef} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useDrop} from "react-dnd";
 import {DraggableUsedLetter} from "./DraggableUsedLetter";
+import {range} from 'range';
 
 export const SubstitutionCell = ({
   staticChar,
@@ -9,70 +10,30 @@ export const SubstitutionCell = ({
   isLocked,
   isEditing,
   isConflict,
-  substitutionIndex,
   onEditingStarted,
-  onEditingCancelled,
-  onEditingMoved,
   rank,
   editRank,
   pinned,
   onChangeChar,
   onChangeLocked,
+  symbolsPerLetterMax,
 }) => {
   const startEditing = () => {
     if (!isLocked && !isEditing) {
-      onEditingStarted(substitutionIndex, editRank, pinned);
+      onEditingStarted(editRank, pinned);
     }
   };
-  const keyDown = (event) => {
-    let handled = true;
-    if (event.key === 'ArrowRight') {
-      onEditingMoved(substitutionIndex, 0, 1);
-    } else if (event.key === 'ArrowLeft') {
-      onEditingMoved(substitutionIndex, 0, -1);
-    } else if (event.key === 'ArrowUp') {
-      onEditingMoved(substitutionIndex, -1, 0);
-    } else if (event.key === 'ArrowDown') {
-      onEditingMoved(substitutionIndex, 1, 0);
-    } else if (event.key === 'Escape' || event.key === 'Enter') {
-      onEditingCancelled(substitutionIndex);
-    } else if (event.key === 'Backspace') {
-      onChangeChar(substitutionIndex, rank, '');
-      onEditingMoved(substitutionIndex, 0, -1);
-    } else if (event.key === 'Delete') {
-      onChangeChar(substitutionIndex, rank, '');
-    } else {
-      handled = false;
-    }
-    if (handled) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
-  const cellChanged = (value) => {
-    onChangeChar(substitutionIndex, rank, value);
+  const cellChanged = (value, position) => {
+    onChangeChar(rank, position, value);
   };
   const lockClicked = () => {
-    onChangeLocked(substitutionIndex, rank, !isLocked);
+    onChangeLocked(rank, !isLocked);
   };
 
   const staticCell = (
     <div className="substitution-letter-static letter-cell">
       {staticChar || '\u00A0'}
     </div>
-  );
-  const editableCell = (
-    <DraggableUsedLetter
-      cellChanged={cellChanged}
-      keyDown={keyDown}
-      startEditing={startEditing}
-      editableChar={editableChar}
-      isEditing={isEditing}
-      isLocked={isLocked}
-      isConflict={isConflict}
-      substitutionIndex={substitutionIndex}
-      rank={rank}
-    />
   );
   const lock = (
     <div className="substitution-lock" onClick={lockClicked} key={isLocked}>
@@ -90,10 +51,9 @@ export const SubstitutionCell = ({
     }),
     drop: (item) => {
       if (item.letter && !isLocked) {
-        const previousChar = editableChar;
-        onChangeChar(substitutionIndex, rank, item.letter);
-        if (item.substitutionIndex !== undefined && item.substitutionIndex !== null) {
-          onChangeChar(item.substitutionIndex, item.rank, previousChar ? previousChar : '', false);
+        onChangeChar(rank, item.position, item.letter);
+        if (item.rank) {
+          onChangeChar(item.rank, item.position, null);
         }
       }
     },
@@ -101,11 +61,25 @@ export const SubstitutionCell = ({
 
   drop(ref);
 
-  const isActive = canDrop && isOver;
+  const isActive = canDrop && isOver && editableChar.length < symbolsPerLetterMax;
 
   return (
     <div ref={ref} className={`substitution-letter ${isActive ? 'substitution-letter-hover' : ''}`}>
-      {staticCell}{editableCell}{lock}
+      {staticCell}
+      {range(0, editableChar.length).map((index) =>
+        <DraggableUsedLetter
+          key={index}
+          position={index}
+          cellChanged={(value) => cellChanged(value, index)}
+          startEditing={startEditing}
+          editableChar={editableChar[index]}
+          isEditing={isEditing}
+          isLocked={isLocked}
+          isConflict={isConflict}
+          rank={rank}
+        />
+      )}
+      {lock}
     </div>
   );
 };

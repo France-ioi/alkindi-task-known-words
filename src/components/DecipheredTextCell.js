@@ -46,7 +46,7 @@ export default class DecipheredTextCell extends React.PureComponent {
     } else if (event.key === 'ArrowLeft') {
       this.props.onEditingMoved(this.props.rowIndex, this.props.position, -1);
     } else if (event.key === 'Escape' || event.key === 'Enter') {
-      this.props.onEditingCancelled(this.props.substitutionIndex);
+      this.props.onEditingCancelled();
     } else if (event.key === 'Backspace') {
       this.props.onChangeChar(this.props.rowIndex, this.props.position, '');
       this.props.onEditingMoved(this.props.rowIndex, this.props.position, -1);

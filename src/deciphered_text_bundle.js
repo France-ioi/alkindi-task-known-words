@@ -3,21 +3,16 @@ import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {range} from 'range';
 import {applySubstitutionToText, wrapAround} from './utils';
-import {SortableSubstitution} from "./components/SortableSubstitution";
-import SubstitutionView from "./components/SubstitutionView";
 import DecipheredTextCell from "./components/DecipheredTextCell";
 import {put, select, takeEvery} from "redux-saga/effects";
-import {SortableSubstitutionsContainer} from "./components/SortableSubstitutionsContainer";
 
 const cellWidth = 22; // px
 const cellHeight = 32; // px
 const pageRows = 4;
 const height = 400;
-const maxSubstitutionsCount = 2;
 const lineNumberWidth = 30; //px
 const subsWidth = 160; // px
 const lineEndWidth = 20; // px
-const headerRowHeight = 40; // px
 
 function appInitReducer (state, _action) {
   return {

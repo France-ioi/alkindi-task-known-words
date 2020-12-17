@@ -557,15 +557,15 @@ hr {
   height: 24px;
 }
 .substitution-letter-editable {
+  background-color: #CCCCCC;
   color: #30242B;
-  border: solid 1px #979797;
-  background: #fff;
   border-radius: 2px;
   text-align: center;
   cursor: text;
   height: 20px;
-  line-height: 18px;
+  line-height: 20px;
   font-size: 16px;
+  margin-bottom: 2px;
 }
 .substitution-letter-editable input {
   color: #30242B;
