@@ -5,6 +5,7 @@ import {range} from 'range';
 const cellWidth = 22;
 const cellHeight = 30;
 const pageRows = 6;
+const textWidth = 138; // px
 
 function appInitReducer (state, _action) {
   return {
@@ -42,12 +43,12 @@ function cipheredTextScrolledReducer (state, {payload: {scrollTop}}) {
 }
 
 function CipherTextViewSelector (state) {
-  const {actions, cipheredText, taskData: {cipherText}} = state;
+  const {actions, cipheredText, taskData: {cipherTextLines}} = state;
   const {cipheredTextResized, cipheredTextScrolled} = actions;
   const {width, scrollTop} = cipheredText;
 
   return {
-    cipherText,
+    cipherTextLines,
     cipheredTextResized,
     cipheredTextScrolled,
     width,
@@ -55,30 +56,13 @@ function CipherTextViewSelector (state) {
   };
 }
 
-function cutTextIntoLines (text, symbolsPerLine) {
-  const words = text.split(' ');
-  const lines = [];
-
-  for (let word of words) {
-    let currentLine = lines[lines.length - 1];
-    if (lines.length && currentLine.length + word.length + 1 <= symbolsPerLine) {
-      lines[lines.length - 1] += ' ' + word;
-    } else {
-      lines.push(word);
-    }
-  }
-
-  return lines;
-}
-
 class CipherTextView extends React.PureComponent {
 
   render () {
-    const {width, scrollTop, cipherText} = this.props;
+    const {width, scrollTop, cipherTextLines} = this.props;
 
     const height = pageRows * cellHeight;
     const pageColumns = Math.max(5, Math.floor((width - 20) / cellWidth));
-    const cipherTextLines = cutTextIntoLines(cipherText, pageColumns);
     const rowsCount = cipherTextLines.length;
     const bottom = rowsCount * cellHeight;
     const maxTop = Math.max(0, bottom + 1 - pageRows * cellHeight);
@@ -110,7 +94,7 @@ class CipherTextView extends React.PureComponent {
               {cipherTextLines[index].split('').slice(0, pageColumns).map((cell, index) =>
                 <div key={index} className="letter-cell" style={{
                   position: 'absolute',
-                  left: `${index * cellWidth}px`,
+                  left: `${textWidth + index * cellWidth}px`,
                   width: `${cellWidth}px`,
                   height: `${cellHeight}px`,
                   lineHeight: `${cellHeight}px`,

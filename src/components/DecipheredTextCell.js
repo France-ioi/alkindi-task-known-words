@@ -19,7 +19,7 @@ export default class DecipheredTextCell extends React.PureComponent {
           {editing
             ? <input ref={this.refInput} onChange={this.cellChanged} onKeyDown={this.keyDown} onBlur={this.blur}
                      type='text' value={value || ''} style={{width: cellWidth + 'px', height: '20px', textAlign: 'center', padding: '0', outline: '0', border: 'none', background: 'transparent'}} />
-            : (hint || value || ciphered || '\u00A0')}
+            : (hint || value || '\u00A0')}
         </div>
       </div>
     );

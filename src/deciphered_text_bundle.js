@@ -5,11 +5,13 @@ import {range} from 'range';
 import {applySubstitutionToText, wrapAroundLines} from './utils';
 import DecipheredTextCell from "./components/DecipheredTextCell";
 import {put, select, takeEvery} from "redux-saga/effects";
+import {DraggableWord} from "./components/DraggableWord";
+import {DroppableWordSlot} from "./components/DroppableWordSlot";
 
 const cellWidth = 22; // px
 const cellHeight = 32; // px
 const pageRows = 4;
-const height = 400;
+const height = 300;
 
 function appInitReducer (state, _action) {
   return {
@@ -18,6 +20,7 @@ function appInitReducer (state, _action) {
       scrollTop: 0,
       substitutionCells: null,
       decipheredLetters: {},
+      placedWords: {},
     },
   };
 }
@@ -60,10 +63,22 @@ function decipheredTextLateReducer (state, _action) {
 }
 
 function applyRefreshedData (state) {
-  let {taskData: {cipherTextLines, alphabet, hints}, decipheredText, substitution} = state;
-  const {decipheredLetters} = decipheredText;
+  let {taskData: {cipherTextLines, alphabet, hints, clearWords}, decipheredText, substitution} = state;
+  const {decipheredLetters, placedWords} = decipheredText;
 
   const hintsIndex = buildHintsIndex(hints);
+
+  let wordsByRow = {};
+  for (let wordIndex of Object.keys(placedWords)) {
+    const {rowIndex, position} = placedWords[wordIndex];
+    if (!(rowIndex in wordsByRow)) {
+      wordsByRow[rowIndex] = {};
+    }
+    const word = clearWords[wordIndex];
+    for (let i = 0; i < word.length; i++) {
+      wordsByRow[rowIndex][position+i] = word.substring(i, i+1);
+    }
+  }
 
   let decipheredTextLines = cipherTextLines.map((line, rowIndex) => {
     const cipherText = line.split('');
@@ -101,6 +116,7 @@ function applyRefreshedData (state) {
     return {
       index: rowIndex,
       ciphered: cipherText,
+      words: rowIndex in wordsByRow ? wordsByRow[rowIndex] : {},
       substitutionResult,
       deciphered,
     };
@@ -153,6 +169,12 @@ function decipheredCellEditStartedReducer (state, {payload: {rowIndex, position}
 
 function decipheredCellEditCancelledReducer (state, _action) {
   return update(state, {editingDecipher: {$set: {}}});
+}
+
+function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, position}}) {
+  const newState = update(state, {decipheredText: {placedWords: {[wordIndex]: {$set: {rowIndex, position}}}}});
+
+  return applyRefreshedData(newState);
 }
 
 function decipheredCellEditMovedReducer (state, {payload: {rowIndex, position, cellMove}}) {
@@ -208,32 +230,31 @@ function DecipheredTextViewSelector (state) {
     decipheredTextResized,
     decipheredTextScrolled,
     decipheredCellEditMoved,
-    decipheredSubstitutionMoved,
     schedulingJump,
-    decipheredSubstitutionAdded,
+    decipheredWordMoved,
   } = actions;
-  const {width, scrollTop, lines, pageColumns} = decipheredText;
+  const {width, scrollTop, lines, pageColumns, placedWords} = decipheredText;
 
   return {
     decipheredCellEditStarted, decipheredCellEditCancelled, decipheredCellCharChanged,
-    decipheredSubstitutionAdded, decipheredCellEditMoved,
-    decipheredSubstitutionMoved,
+    decipheredCellEditMoved,
+    decipheredWordMoved,
     version,
     decipheredTextResized, decipheredTextScrolled, schedulingJump,
-    editingDecipher, width, scrollTop, lines, pageColumns, clearWords
+    editingDecipher, width, scrollTop, lines, pageColumns, clearWords, placedWords
   };
 }
 
 class DecipheredTextView extends React.PureComponent {
   render () {
-    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords} = this.props;
+    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords} = this.props;
     const rowsCount = lines.length;
     const linesHeight = [];
 
     let currentTop = 0;
     let firstRow = 0;
     for (let rowIndex = 0; rowIndex < lines.length; rowIndex++) {
-      let lineHeight = 4 * cellHeight;
+      let lineHeight = (false !== version.clearTextLine ? 4 : 3) * cellHeight;
       linesHeight.push({
         height: lineHeight,
         top: currentTop,
@@ -249,64 +270,89 @@ class DecipheredTextView extends React.PureComponent {
 
     return (
       <div>
-        <div className="block-header-row">
-          <div>
-            <div className="block-header-category">
-              Texte chiffré
-            </div>
-            <div
-              ref={this.refTextBox}
-              onScroll={this.onScroll}
-              className="custom-scrollable"
-              style={{position: 'relative', width: '100%', height: height && `${height}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
-            >
-              {(visibleRows || []).map((rowIndex) =>
-                <div
-                  key={rowIndex}
-                  className="cipher-line"
-                  style={{position: 'absolute', top: `${linesHeight[rowIndex].top}px`, width: '100%'}}
-                >
-                  <div className="cipher-line-subrows">
-                    <div>
-                      Chiffré
-                    </div>
-                    <div>
-                      Mots placés
-                    </div>
-                    <div>
-                      Résultat
-                    </div>
+        <div>
+          <div className="block-header-category">
+            Texte chiffré
+          </div>
+          <div
+            ref={this.refTextBox}
+            onScroll={this.onScroll}
+            className="custom-scrollable"
+            style={{position: 'relative', width: '100%', height: height && `${height}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
+          >
+            {(visibleRows || []).map((rowIndex) =>
+              <div
+                key={rowIndex}
+                className="cipher-line is-bordered"
+                style={{position: 'absolute', top: `${linesHeight[rowIndex].top}px`, width: '100%'}}
+              >
+                <div className="cipher-line-subrows">
+                  <div>
+                    Chiffré
+                  </div>
+                  <div>
+                    Mots placés
+                  </div>
+                  <div>
+                    Résultat
+                  </div>
+                  {false !== version.clearTextLine &&
                     <div>
                       Clair
                     </div>
-                  </div>
-                  <div>
-                    <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 2}px`}}>
-                      {/*Ciphered*/}
-                      <div style={{position: 'absolute', top: `0px`}}>
-                        {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
-                          <div
-                            key={resultIndex}
-                            className={`letter-cell`}
-                            style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
-                          >
-                            {value}
-                          </div>
-                        )}
-                      </div>
-                      {/*Result*/}
-                      <div style={{position: 'absolute', top: `${2*cellHeight}px`}}>
-                        {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
-                          <div
-                            key={resultIndex}
-                            className={`letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
-                            style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
-                          >
-                            {value}
-                          </div>
-                        )}
-                      </div>
-                      {/*Clear text row*/}
+                  }
+                </div>
+                <div>
+                  <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 2}px`}}>
+                    {/*Ciphered*/}
+                    <div style={{position: 'absolute', top: `0px`}}>
+                      {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
+                        <div
+                          key={resultIndex}
+                          className={`letter-cell deciphered-ciphered-cell ${value === ' ' ? 'is-space' : ''}`}
+                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                        >
+                          {value}
+                        </div>
+                      )}
+                    </div>
+                    {/*Words*/}
+                    <div style={{position: 'absolute', top: `${cellHeight}px`}}>
+                      {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
+                        <div
+                          key={resultIndex}
+                          className={`${value === ' ' ? 'is-space' : ''}`}
+                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                        >
+                          {lines[rowIndex].words[resultIndex] ?
+                            <div className="deciphered-word-cell">
+                              {lines[rowIndex].words[resultIndex]}
+                            </div>
+                            :
+                            <DroppableWordSlot
+                              rowIndex={rowIndex}
+                              position={resultIndex}
+                              ciphered={value}
+                              onWordMoved={this.onWordMoved}
+                            />
+                          }
+                        </div>
+                      )}
+                    </div>
+                    {/*Result*/}
+                    <div style={{position: 'absolute', top: `${2*cellHeight}px`}}>
+                      {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
+                        <div
+                          key={resultIndex}
+                          className={`letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
+                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                        >
+                          {value}
+                        </div>
+                      )}
+                    </div>
+                    {/*Clear text row*/}
+                    {false !== version.clearTextLine &&
                       <div style={{position: 'absolute', top: `${3*cellHeight}px`}}>
                         {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint}, resultIndex) =>
                           <div
@@ -337,24 +383,35 @@ class DecipheredTextView extends React.PureComponent {
                           </div>
                         )}
                       </div>
-                    </div>
+                    }
                   </div>
-                </div>)}
-              <div style={{position: 'absolute', top: `${bottom}px`, width: '1px', height: '1px'}} />
-            </div>
+                </div>
+              </div>)}
+            <div style={{position: 'absolute', top: `${bottom}px`, width: '1px', height: '1px'}} />
           </div>
-          <div>
-            <div className="block-header-category">
-              Mots du clair
-            </div>
-            <div
-              className="custom-scrollable"
-              style={{position: 'relative', width: '100%', height: height && `${height}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
-            >
-              {clearWords.map((word, wordIndex) =>
-                <div key={wordIndex}>{word}</div>
-              )}
-            </div>
+        </div>
+        <div>
+          <div className="block-header-category">
+            Mots du clair
+          </div>
+          <div
+            className="custom-scrollable words-container"
+          >
+            {range(0, 2).map(column =>
+              <div className="word-column" key={column}>
+                {(0 === column ? clearWords.slice(0, Math.floor(clearWords.length / 2)) : clearWords.slice(Math.floor(clearWords.length / 2), 100)).map((word, wordIndex) =>
+                  <div
+                    key={column * Math.floor(clearWords.length / 2) + wordIndex}
+                    className={`word-container ${(column * Math.floor(clearWords.length / 2) + wordIndex) in placedWords ? 'word-used' : ''}`}
+                  >
+                    <DraggableWord
+                      wordIndex={column * Math.floor(clearWords.length / 2) + wordIndex}
+                      word={word}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -373,9 +430,6 @@ class DecipheredTextView extends React.PureComponent {
   componentDidUpdate () {
     this._textBox.scrollTop = this.props.scrollTop;
   }
-  moveSubstitution = (substitution, position) => {
-    this.props.dispatch({type: this.props.decipheredSubstitutionMoved, payload: {substitution, position}});
-  };
   onEditingStarted = (rowIndex, position) => {
     this.props.dispatch({type: this.props.decipheredCellEditStarted, payload: {rowIndex, position}});
   };
@@ -389,6 +443,9 @@ class DecipheredTextView extends React.PureComponent {
   onEditingMoved = (rowIndex, position, cellMove) => {
     this.props.dispatch({type: this.props.decipheredCellEditMoved, payload: {rowIndex, position, cellMove}});
   };
+  onWordMoved = (wordIndex, rowIndex, position) => {
+    this.props.dispatch({type: this.props.decipheredWordMoved, payload: {wordIndex, rowIndex, position}});
+  };
 }
 
 export default {
@@ -398,9 +455,8 @@ export default {
     decipheredCellEditStarted: 'DecipheredText.Cell.Edit.Started',
     decipheredCellEditCancelled: 'DecipheredText.Cell.Edit.Cancelled',
     decipheredCellCharChanged: 'DecipheredText.Cell.Char.Changed',
-    decipheredSubstitutionAdded: 'DecipheredText.Substitution.Added',
     decipheredCellEditMoved: 'DecipheredText.Cell.Edit.Moved',
-    decipheredSubstitutionMoved: 'DecipheredText.Substitution.Moved',
+    decipheredWordMoved: 'DecipheredText.Word.Moved',
   },
   actionReducers: {
     appInit: appInitReducer,
@@ -412,11 +468,12 @@ export default {
     decipheredCellEditCancelled: decipheredCellEditCancelledReducer,
     decipheredCellCharChanged: decipheredCellCharChangedReducer,
     decipheredCellEditMoved: decipheredCellEditMovedReducer,
+    decipheredWordMoved: decipheredWordMovedReducer,
   },
   lateReducer: decipheredTextLateReducer,
   saga: function* () {
     const actions = yield select(({actions}) => actions);
-    yield takeEvery(actions.decipheredSubstitutionMoved, function* () {
+    yield takeEvery(actions.decipheredWordMoved, function* () {
       yield put({type: actions.hintRequestFeedbackCleared});
     });
     yield takeEvery(actions.decipheredCellEditStarted, function* () {

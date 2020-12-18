@@ -161,7 +161,7 @@ const versions = {
   '0.1': {
     version: '0.1',
     clearTextLength: 30,
-    symbolsPerLine: 19,
+    symbolsPerLine: 28,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
     hints: false,
@@ -172,32 +172,75 @@ const versions = {
   1: {
     version: 1,
     clearTextLength: 400,
-    symbolsPerLine: 19,
+    symbolsPerLine: 28,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
     hints: false,
     frequencyAnalysis: false,
     explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
+
+  '2.1': {
+    version: '2.1',
+    clearTextLength: 200,
+    symbolsPerLine: 28,
+    symbolsCountToUse: 26,
+    extractedWordsCount: 100,
+    symbolsPerLetterMax: 1,
+    hints: false,
+    frequencyAnalysis: false,
+    clearTextLine: false,
+    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (un symbole par lettre).',
+  },
+  '2.2': {
+    version: '2.2',
+    clearTextLength: 300,
+    symbolsPerLine: 28,
+    symbolsCountToUse: 35,
+    extractedWordsCount: 30,
+    symbolsPerLetterMax: 2,
+    hints: false,
+    frequencyAnalysis: false,
+    clearTextLine: false,
+    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (plusieurs symboles par lettre).',
+  },
+  '2.3': {
+    version: '2.3',
+    clearTextLength: 400,
+    symbolsPerLine: 28,
+    extractedWordsCount: 20,
+    symbolsPerLetterMax: 3,
+    symbolsCountToUse: 50,
+    hints: false,
+    frequencyAnalysis: false,
+    clearTextLine: false,
+    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (plusieurs symboles par lettre).',
+  },
 };
 
-generateTaskData({
-  params: {
-    version: 1,
-  },
-  random_seed: 9,
-});
+// generateTaskData({
+//   params: {
+//     version: 1,
+//   },
+//   random_seed: 9,
+// });
 
 // module.exports.generateTaskData =
 function generateTaskData (task) {
   const version = task.params.version || 1;
-  let {clearTextLength, symbolsPerLine, extractedWordsCount} = versions[version];
+  let {clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse} = versions[version];
 
   const rng0 = seedrandom(task.random_seed + 16);
 
-  const {substitution, symbols} = generateSubstitution(rng0, new Array(26).fill(1));
+  const symbolsToUse = new Array(alphabet.length).fill(1);
+  for (let i = 0; i < (symbolsCountToUse - alphabet.length); i++) {
+    const letter = Math.floor(rng0() * alphabet.length);
+    symbolsToUse[letter]++;
+  }
 
-  const clearText = generate(rng0, clearTextLength, clearTextLength + 20, true);
+  const {substitution, symbols} = generateSubstitution(rng0, symbolsToUse);
+
+  const clearText = generate(rng0, clearTextLength, clearTextLength + 20, true).trim();
   const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
 
   const cipherText = applySubstitution(clearText, substitution, rng0);
