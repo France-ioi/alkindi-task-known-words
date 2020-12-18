@@ -91,7 +91,7 @@ function getTaskAnswer (state) {
   const {lines, decipheredLetters, placedWords} = decipheredText;
 
   const answer = lines.map(({deciphered}) => {
-    return deciphered.map(cell => cell.hint || cell.value || ' ').join('');
+    return deciphered.map(cell => cell.hint || cell.value || cell.result || cell.word || ' ').join('');
   });
 
   const answerState = {

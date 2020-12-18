@@ -8,7 +8,7 @@ var {range} = require("range");
  */
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const symbols = "^@&~#{}[]()|-\\_@^°+=$£%¨*µ!§:/;.,?abcdefghijklmnopqrstuvwxyz";
+const symbols = "^@&~#{}[]()|-\\_°+=$£%¨*µ!§:/;.,?abcdefghijklmnopqrstuvwxyz";
 
 /**
  * task module export...
@@ -161,7 +161,7 @@ const versions = {
   '0.1': {
     version: '0.1',
     clearTextLength: 30,
-    symbolsPerLine: 28,
+    symbolsPerLine: 27,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
     hints: false,
@@ -172,7 +172,7 @@ const versions = {
   1: {
     version: 1,
     clearTextLength: 400,
-    symbolsPerLine: 28,
+    symbolsPerLine: 27,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
     hints: false,
@@ -182,8 +182,8 @@ const versions = {
 
   '2.1': {
     version: '2.1',
-    clearTextLength: 200,
-    symbolsPerLine: 28,
+    clearTextLength: 100,
+    symbolsPerLine: 27,
     symbolsCountToUse: 26,
     extractedWordsCount: 100,
     symbolsPerLetterMax: 1,
@@ -195,7 +195,7 @@ const versions = {
   '2.2': {
     version: '2.2',
     clearTextLength: 300,
-    symbolsPerLine: 28,
+    symbolsPerLine: 27,
     symbolsCountToUse: 35,
     extractedWordsCount: 30,
     symbolsPerLetterMax: 2,
@@ -207,7 +207,7 @@ const versions = {
   '2.3': {
     version: '2.3',
     clearTextLength: 400,
-    symbolsPerLine: 28,
+    symbolsPerLine: 27,
     extractedWordsCount: 20,
     symbolsPerLetterMax: 3,
     symbolsCountToUse: 50,
@@ -218,12 +218,12 @@ const versions = {
   },
 };
 
-// generateTaskData({
-//   params: {
-//     version: 1,
-//   },
-//   random_seed: 9,
-// });
+generateTaskData({
+  params: {
+    version: 1,
+  },
+  random_seed: 6,
+});
 
 // module.exports.generateTaskData =
 function generateTaskData (task) {

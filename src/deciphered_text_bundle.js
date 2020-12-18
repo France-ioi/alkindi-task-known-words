@@ -94,16 +94,25 @@ function applyRefreshedData (state) {
         ciphered: letter.value,
         value: rowIndex in decipheredLetters && position in decipheredLetters[rowIndex] ? decipheredLetters[rowIndex][position] : null,
         hint: rowIndex in hintsIndex && position in hintsIndex[rowIndex] ? hintsIndex[rowIndex][position] : null,
+        word: rowIndex in wordsByRow && position in wordsByRow[rowIndex] ? wordsByRow[rowIndex][position] : null,
       };
     });
 
     let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet);
+    for (let i = 0; i < substitutionResult.length; i++) {
+      deciphered[i].result = substitutionResult[i].value;
+    }
+
     substitutionResult = substitutionResult.map((cell, position) => {
       if (!cell.value) {
         return cell;
       }
 
-      if ((deciphered[position].hint && deciphered[position].hint !== cell.value) || (deciphered[position].value && deciphered[position].value !== cell.value)) {
+      if (
+        (deciphered[position].hint && deciphered[position].hint !== cell.value)
+        || (deciphered[position].value && deciphered[position].value !== cell.value)
+        || (rowIndex in wordsByRow && position in wordsByRow[rowIndex] && wordsByRow[rowIndex][position] !== cell.value)
+      ) {
         return {
           ...cell,
           conflict: true,
@@ -172,6 +181,23 @@ function decipheredCellEditCancelledReducer (state, _action) {
 }
 
 function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, position}}) {
+  const {decipheredText: {lines}, taskData: {clearWords}} = state;
+  const newWord = clearWords[wordIndex];
+
+  if (null === rowIndex) {
+    const newState = update(state, {decipheredText: {placedWords: {$unset: [wordIndex]}}});
+
+    return applyRefreshedData(newState);
+  }
+
+  const newLine = lines[rowIndex].words;
+  for (let i = 0; i < newWord.length; i++) {
+    const newPosition = position + i;
+    if (newLine[newPosition] || newPosition > lines[rowIndex].ciphered.length - 1) {
+      return state;
+    }
+  }
+
   const newState = update(state, {decipheredText: {placedWords: {[wordIndex]: {$set: {rowIndex, position}}}}});
 
   return applyRefreshedData(newState);
@@ -268,6 +294,15 @@ class DecipheredTextView extends React.PureComponent {
     const lastRow = Math.min(firstRow + pageRows + 2, rowsCount);
     const visibleRows = range(firstRow, lastRow);
 
+    let wordsByRow = {};
+    for (let wordIndex of Object.keys(placedWords)) {
+      const {rowIndex, position} = placedWords[wordIndex];
+      if (!(rowIndex in wordsByRow)) {
+        wordsByRow[rowIndex] = [];
+      }
+      wordsByRow[rowIndex].push({position, wordIndex});
+    }
+
     return (
       <div>
         <div>
@@ -310,7 +345,7 @@ class DecipheredTextView extends React.PureComponent {
                         <div
                           key={resultIndex}
                           className={`letter-cell deciphered-ciphered-cell ${value === ' ' ? 'is-space' : ''}`}
-                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 12}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
                         >
                           {value}
                         </div>
@@ -324,11 +359,7 @@ class DecipheredTextView extends React.PureComponent {
                           className={`${value === ' ' ? 'is-space' : ''}`}
                           style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
                         >
-                          {lines[rowIndex].words[resultIndex] ?
-                            <div className="deciphered-word-cell">
-                              {lines[rowIndex].words[resultIndex]}
-                            </div>
-                            :
+                          {!lines[rowIndex].words[resultIndex] &&
                             <DroppableWordSlot
                               rowIndex={rowIndex}
                               position={resultIndex}
@@ -336,6 +367,20 @@ class DecipheredTextView extends React.PureComponent {
                               onWordMoved={this.onWordMoved}
                             />
                           }
+                        </div>
+                      )}
+                      {rowIndex in wordsByRow && wordsByRow[rowIndex].map(({position, wordIndex}) =>
+                        <div
+                          key={wordIndex}
+                          style={{position: 'absolute', left: `${position * cellWidth}px`, width: `${cellWidth}px`, top: '2px'}}
+                          className={`word-container`}
+                        >
+                          <DraggableWord
+                            minimal={true}
+                            wordIndex={wordIndex}
+                            word={clearWords[wordIndex]}
+                            onWordMoved={this.onWordMoved}
+                          />
                         </div>
                       )}
                     </div>

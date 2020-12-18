@@ -543,7 +543,7 @@ hr {
   width: 20px;
   border-radius: 2px;
 }
-.substitution-letter.substitution-letter-hover {
+.substitution-letter-hover {
   background-color: #88BB8850 !important;
 }
 .substitution-letter-static {
@@ -708,11 +708,17 @@ hr {
   cursor: move;
   height: 24px;
 }
+.draggable-word.is-minimal {
+  padding: 0;
+  margin-left: 0;
+}
 .draggable-word svg {
   margin-right: 10px;
   display: block;
 }
 .draggable-word-value {
-  margin-right: 4px;
-  letter-spacing: 10px;
+  display: flex;
+}
+.draggable-word-letter {
+  min-width: 22px;
 }
