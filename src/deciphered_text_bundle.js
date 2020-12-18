@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {range} from 'range';
-import {applySubstitutionToText, wrapAround} from './utils';
+import {applySubstitutionToText, wrapAroundLines} from './utils';
 import DecipheredTextCell from "./components/DecipheredTextCell";
 import {put, select, takeEvery} from "redux-saga/effects";
 
@@ -10,9 +10,6 @@ const cellWidth = 22; // px
 const cellHeight = 32; // px
 const pageRows = 4;
 const height = 400;
-const lineNumberWidth = 30; //px
-const subsWidth = 160; // px
-const lineEndWidth = 20; // px
 
 function appInitReducer (state, _action) {
   return {
@@ -21,35 +18,17 @@ function appInitReducer (state, _action) {
       scrollTop: 0,
       substitutionCells: null,
       decipheredLetters: {},
-      selectedRows: {},
-      appliedSubstitutions: {},
-      lastSubstitutionsUsed: [],
     },
   };
 }
 
 function taskInitReducer (state) {
-  let {decipheredText, taskData: {version, cipherTextLines}} = state;
+  let {decipheredText} = state;
   if (!decipheredText) {
     return state;
   }
 
-  let newState = state;
-  if (version.applyInverse) {
-    let appliedSubstitutions = {};
-    for (let i = 0; i < cipherTextLines.length; i++) {
-      const line = cipherTextLines[i];
-      const inverseSubstitutions = [];
-      for (let {count, type} of line.substitutions) {
-        inverseSubstitutions.push({count, type: type + 2});
-      }
-      appliedSubstitutions[i] = [inverseSubstitutions];
-    }
-
-    newState = update(state, {decipheredText: {appliedSubstitutions: {$set: appliedSubstitutions}}});
-  }
-
-  return applyRefreshedData({...newState});
+  return applyRefreshedData({...state});
 }
 
 function taskRefreshReducer (state) {
@@ -58,8 +37,8 @@ function taskRefreshReducer (state) {
 
 function decipheredTextResizedReducer (state, {payload: {width}}) {
   let {decipheredText, taskData: {cipherTextLines}} = state;
-  const extraWidth = lineNumberWidth + subsWidth + lineEndWidth;
-  const pageColumns = Math.min(cipherTextLines[0].length, Math.max(5, Math.floor((width - extraWidth) / cellWidth)));
+  const maxLength = cipherTextLines.reduce((current, next) => Math.max(current, next.length), 0);
+  const pageColumns = Math.min(maxLength, Math.max(5, Math.floor((width - 20) / cellWidth)));
 
   decipheredText = {...decipheredText, width, pageColumns};
 
@@ -73,37 +52,6 @@ function decipheredTextScrolledReducer (state, {payload: {scrollTop}}) {
   return {...state, decipheredText};
 }
 
-function decipheredSelectionChangedReducer (state, {payload: {rowIndex, subLineIndex}}) {
-  let {decipheredText, taskData: {version}} = state;
-  let {selectedRows} = decipheredText;
-
-  if (false === version.frequencyAnalysis || version.frequencyAnalysisWhole) {
-    return state;
-  }
-
-  let selectedSubLines;
-  if (!(rowIndex in selectedRows)) {
-    selectedSubLines = [subLineIndex];
-  } else {
-    selectedSubLines = selectedRows[rowIndex];
-    const position = selectedSubLines.indexOf(subLineIndex);
-    if (position === -1) {
-      selectedSubLines = [...selectedSubLines, subLineIndex];
-    } else {
-      selectedSubLines = [...selectedSubLines.slice(0, position), ...selectedSubLines.slice(position + 1)];
-    }
-  }
-
-  selectedRows = {
-    ...selectedRows,
-    [rowIndex]: selectedSubLines,
-  };
-
-  decipheredText = {...decipheredText, selectedRows};
-
-  return applyRefreshedData({...state, decipheredText});
-}
-
 function decipheredTextLateReducer (state, _action) {
   if (!state.taskData) return state;
   let {decipheredText} = state;
@@ -112,51 +60,19 @@ function decipheredTextLateReducer (state, _action) {
 }
 
 function applyRefreshedData (state) {
-  let {taskData: {cipherTextLines, alphabet, hints, version}, decipheredText, substitutions} = state;
+  let {taskData: {cipherTextLines, alphabet, hints}, decipheredText, substitution} = state;
   const {decipheredLetters} = decipheredText;
 
   const hintsIndex = buildHintsIndex(hints);
 
   let decipheredTextLines = cipherTextLines.map((line, rowIndex) => {
-    return {
-      index: rowIndex,
-      ciphered: line.split(''),
-      deciphered: [],
-    };
-
-    const cipherText = line.cipherText.split('');
+    const cipherText = line.split('');
 
     let currentCipherText = cipherText.map(letter => {
       return {
         value: letter,
       };
     });
-
-    let substitutionLines = [];
-    substitutionLines.push({
-      subLineIndex: 0,
-      substitutions: line.substitutions,
-      result: currentCipherText,
-      editable: false,
-    });
-
-    if (rowIndex in decipheredText.appliedSubstitutions) {
-      let rowSubstitutions = decipheredText.appliedSubstitutions[rowIndex];
-      for (let [index, subLineSubstitutions] of rowSubstitutions.entries()) {
-        for (let {count, type} of subLineSubstitutions) {
-          for (let k = 0; k < count; k++) {
-            currentCipherText = applySubstitutionToText(substitutions[type-2], currentCipherText, alphabet);
-          }
-        }
-
-        substitutionLines.push({
-          subLineIndex: index + 1,
-          substitutions: subLineSubstitutions,
-          result: currentCipherText,
-          editable: !version.applyInverse,
-        });
-      }
-    }
 
     const deciphered = currentCipherText.map((letter, position) => {
       return {
@@ -166,28 +82,27 @@ function applyRefreshedData (state) {
       };
     });
 
-    if (substitutionLines.length > 1) {
-      substitutionLines[substitutionLines.length - 1].result = substitutionLines[substitutionLines.length - 1].result.map((cell, position) => {
-        if (!cell.value) {
-          return cell;
-        }
-
-        if ((deciphered[position].hint && deciphered[position].hint !== cell.value) || (deciphered[position].value && deciphered[position].value !== cell.value)) {
-          return {
-            ...cell,
-            conflict: true,
-          };
-        }
-
+    let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet);
+    substitutionResult = substitutionResult.map((cell, position) => {
+      if (!cell.value) {
         return cell;
-      });
-    }
+      }
+
+      if ((deciphered[position].hint && deciphered[position].hint !== cell.value) || (deciphered[position].value && deciphered[position].value !== cell.value)) {
+        return {
+          ...cell,
+          conflict: true,
+        };
+      }
+
+      return cell;
+    });
 
     return {
       index: rowIndex,
       ciphered: cipherText,
+      substitutionResult,
       deciphered,
-      substitutionLines,
     };
   });
 
@@ -241,19 +156,19 @@ function decipheredCellEditCancelledReducer (state, _action) {
 }
 
 function decipheredCellEditMovedReducer (state, {payload: {rowIndex, position, cellMove}}) {
-  let {decipheredText: {lines, pageColumns}} = state;
-  const cellStop = position;
-  let cellRank = position;
+  let {decipheredText: {lines}, taskData: {cipherTextLines}} = state;
+  const cellStop = {rowIndex, position};
+  let cellRank = {rowIndex, position};
   let cell;
 
   do {
-    cellRank = wrapAround(cellRank + cellMove, pageColumns);
-    cell = lines[rowIndex].deciphered[cellRank];
+    cellRank = wrapAroundLines(cellRank, cellMove, cipherTextLines);
+    cell = lines[cellRank.rowIndex].deciphered[cellRank.position];
     /* If we looped back to the starting point, the move is impossible. */
-    if (cellStop === cellRank) return state;
-  } while (cell.hint);
+    if (cellStop.rowIndex === cellRank.rowIndex && cellStop.position === cellRank.position) return state;
+  } while (cell.hint || cell.ciphered === ' ');
 
-  return update(state, {editingDecipher: {$set: {rowIndex, position: cellRank}}});
+  return update(state, {editingDecipher: {$set: {rowIndex: cellRank.rowIndex, position: cellRank.position}}});
 }
 
 function decipheredCellCharChangedReducer (state, {payload: {rowIndex, position, symbol}}) {
@@ -295,42 +210,30 @@ function DecipheredTextViewSelector (state) {
     decipheredCellEditMoved,
     decipheredSubstitutionMoved,
     schedulingJump,
-    decipheredSelectionChanged,
     decipheredSubstitutionAdded,
   } = actions;
-  const {width, scrollTop, lines, selectedRows, pageColumns, lastSubstitutionsUsed} = decipheredText;
+  const {width, scrollTop, lines, pageColumns} = decipheredText;
 
   return {
     decipheredCellEditStarted, decipheredCellEditCancelled, decipheredCellCharChanged,
-    decipheredSelectionChanged, decipheredSubstitutionAdded, decipheredCellEditMoved,
+    decipheredSubstitutionAdded, decipheredCellEditMoved,
     decipheredSubstitutionMoved,
     version,
     decipheredTextResized, decipheredTextScrolled, schedulingJump,
-    editingDecipher, width, scrollTop, lines, selectedRows, pageColumns, lastSubstitutionsUsed, clearWords
+    editingDecipher, width, scrollTop, lines, pageColumns, clearWords
   };
 }
 
 class DecipheredTextView extends React.PureComponent {
-  constructor (props) {
-    super(props);
-    this.substitutionModal = React.createRef();
-    this.state = {
-      modalShow: false,
-      currentEditedSubstitution: null,
-    };
-  }
-
   render () {
-    const {pageColumns, scrollTop, lines, selectedRows, editingDecipher, lastSubstitutionsUsed, version, clearWords} = this.props;
-    const {modalShow} = this.state;
+    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords} = this.props;
     const rowsCount = lines.length;
     const linesHeight = [];
 
     let currentTop = 0;
     let firstRow = 0;
     for (let rowIndex = 0; rowIndex < lines.length; rowIndex++) {
-      const line = lines[rowIndex];
-      let lineHeight = 2 * cellHeight + 5;
+      let lineHeight = 4 * cellHeight;
       linesHeight.push({
         height: lineHeight,
         top: currentTop,
@@ -360,54 +263,80 @@ class DecipheredTextView extends React.PureComponent {
               {(visibleRows || []).map((rowIndex) =>
                 <div
                   key={rowIndex}
-                  className={`cipher-line`}
+                  className="cipher-line"
                   style={{position: 'absolute', top: `${linesHeight[rowIndex].top}px`, width: '100%'}}
                 >
-                  <div style={{width: `${lineNumberWidth + cellWidth * pageColumns}px`, height: `${linesHeight[rowIndex].height - 2}px`}}>
-                    <div
-                      key="lineBeginning"
-                      className="cipher-line-index"
-                      style={{
-                        position: 'absolute',
-                        left: `0px`,
-                        width: `${lineNumberWidth}px`,
-                        height: `${linesHeight[rowIndex].height-1}px`,
-                        textAlign: 'center',
-                        lineHeight: `${linesHeight[rowIndex].height}px`
-                      }}
-                    >
-                      {rowIndex+1}
+                  <div className="cipher-line-subrows">
+                    <div>
+                      Chiffré
                     </div>
-                    {/*Clear text row*/}
-                    <div style={{position: 'absolute', top: `${cellHeight}px`}}>
-                      {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint}, resultIndex) =>
-                        <div
-                          key={resultIndex}
-                          style={{
-                            position: 'absolute',
-                            left: `${lineNumberWidth + subsWidth + resultIndex * cellWidth}px`,
-                            width: `${cellWidth}px`,
-                            height: `${cellHeight}px`,
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <DecipheredTextCell
+                    <div>
+                      Mots placés
+                    </div>
+                    <div>
+                      Résultat
+                    </div>
+                    <div>
+                      Clair
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 2}px`}}>
+                      {/*Ciphered*/}
+                      <div style={{position: 'absolute', top: `0px`}}>
+                        {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
+                          <div
                             key={resultIndex}
-                            rowIndex={rowIndex}
-                            position={resultIndex}
-                            editing={editingDecipher && editingDecipher.rowIndex === rowIndex && editingDecipher.position === resultIndex}
-                            ciphered={ciphered}
-                            value={value}
-                            hint={hint}
-                            cellWidth={cellWidth}
-                            onChangeChar={this.onChangeChar}
-                            onEditingStarted={this.onEditingStarted}
-                            onEditingCancelled={this.onEditingCancelled}
-                            onEditingMoved={this.onEditingMoved}
-                          />
-                        </div>
-                      )}
+                            className={`letter-cell`}
+                            style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                          >
+                            {value}
+                          </div>
+                        )}
+                      </div>
+                      {/*Result*/}
+                      <div style={{position: 'absolute', top: `${2*cellHeight}px`}}>
+                        {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
+                          <div
+                            key={resultIndex}
+                            className={`letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
+                            style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                          >
+                            {value}
+                          </div>
+                        )}
+                      </div>
+                      {/*Clear text row*/}
+                      <div style={{position: 'absolute', top: `${3*cellHeight}px`}}>
+                        {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint}, resultIndex) =>
+                          <div
+                            key={resultIndex}
+                            style={{
+                              position: 'absolute',
+                              left: `${resultIndex * cellWidth}px`,
+                              width: `${cellWidth}px`,
+                              height: `${cellHeight}px`,
+                              display: 'flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <DecipheredTextCell
+                              key={resultIndex}
+                              rowIndex={rowIndex}
+                              position={resultIndex}
+                              editing={editingDecipher && editingDecipher.rowIndex === rowIndex && editingDecipher.position === resultIndex}
+                              ciphered={ciphered}
+                              value={value}
+                              hint={hint}
+                              cellWidth={cellWidth}
+                              onChangeChar={this.onChangeChar}
+                              onEditingStarted={this.onEditingStarted}
+                              onEditingCancelled={this.onEditingCancelled}
+                              onEditingMoved={this.onEditingMoved}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>)}
@@ -419,12 +348,11 @@ class DecipheredTextView extends React.PureComponent {
               Mots du clair
             </div>
             <div
-              ref={this.refTextBox}
               className="custom-scrollable"
               style={{position: 'relative', width: '100%', height: height && `${height}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
             >
-              {clearWords.map(word =>
-                <div>{word}</div>
+              {clearWords.map((word, wordIndex) =>
+                <div key={wordIndex}>{word}</div>
               )}
             </div>
           </div>
@@ -461,39 +389,7 @@ class DecipheredTextView extends React.PureComponent {
   onEditingMoved = (rowIndex, position, cellMove) => {
     this.props.dispatch({type: this.props.decipheredCellEditMoved, payload: {rowIndex, position, cellMove}});
   };
-  rowClicked = (rowIndex, subLineIndex) => {
-    this.props.dispatch({type: this.props.decipheredSelectionChanged, payload: {rowIndex, subLineIndex}});
-  };
-  openSubstitutionModal = (currentEditedSubstitution) => {
-    if (currentEditedSubstitution.count) {
-      this.substitutionModal.current.updateSubstitution({count: currentEditedSubstitution.count, type: currentEditedSubstitution.type});
-    }
-    this.setModalShow(true);
-    this.setState({
-      currentEditedSubstitution,
-    });
-  };
-  setModalShow = (modalShow) => {
-    this.setState({
-      modalShow,
-    });
-  }
-  addEditSubstitution = (substitution) => {
-    let {count, type} = substitution;
-    if (null === type || count < 1) {
-      return;
-    }
-
-    this.props.dispatch({type: this.props.decipheredSubstitutionAdded, payload: {
-      ...substitution,
-      rowIndex: this.state.currentEditedSubstitution.rowIndex,
-      subLineIndex: this.state.currentEditedSubstitution.subLineIndex,
-      substitutionIndex: this.state.currentEditedSubstitution.substitutionIndex,
-    }});
-    this.setModalShow(false);
-  };
 }
-
 
 export default {
   actions: {
@@ -502,7 +398,6 @@ export default {
     decipheredCellEditStarted: 'DecipheredText.Cell.Edit.Started',
     decipheredCellEditCancelled: 'DecipheredText.Cell.Edit.Cancelled',
     decipheredCellCharChanged: 'DecipheredText.Cell.Char.Changed',
-    decipheredSelectionChanged: 'DecipheredText.Selection.Changed',
     decipheredSubstitutionAdded: 'DecipheredText.Substitution.Added',
     decipheredCellEditMoved: 'DecipheredText.Cell.Edit.Moved',
     decipheredSubstitutionMoved: 'DecipheredText.Substitution.Moved',
@@ -516,7 +411,6 @@ export default {
     decipheredCellEditStarted: decipheredCellEditStartedReducer,
     decipheredCellEditCancelled: decipheredCellEditCancelledReducer,
     decipheredCellCharChanged: decipheredCellCharChangedReducer,
-    decipheredSelectionChanged: decipheredSelectionChangedReducer,
     decipheredCellEditMoved: decipheredCellEditMovedReducer,
   },
   lateReducer: decipheredTextLateReducer,
@@ -529,9 +423,6 @@ export default {
       yield put({type: actions.hintRequestFeedbackCleared});
     });
     yield takeEvery(actions.decipheredCellCharChanged, function* () {
-      yield put({type: actions.hintRequestFeedbackCleared});
-    });
-    yield takeEvery(actions.decipheredSelectionChanged, function* () {
       yield put({type: actions.hintRequestFeedbackCleared});
     });
   },

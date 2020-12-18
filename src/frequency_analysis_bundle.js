@@ -43,59 +43,56 @@ function applySubstitutionToFreq (substitution, frequencyAnalysis, alphabet) {
 
 function frequencyAnalysisLateReducer (state) {
   if (state.taskData) {
-    let {taskData: {alphabet, cipherTextLines, version}, decipheredText: {selectedRows, appliedSubstitutions}, substitutions} = state;
+    let {taskData: {alphabet, cipherTextLines, version}, decipheredText: {appliedSubstitutions}, substitutions} = state;
 
-    let frequencySelectedRows = selectedRows;
-    if (version.frequencyAnalysisWhole) {
-      frequencySelectedRows = {};
-      for (let rowIndex = 0; rowIndex < cipherTextLines.length; rowIndex++) {
-        frequencySelectedRows[rowIndex] = [0];
-      }
+    let frequencySelectedRows = {};
+    for (let rowIndex = 0; rowIndex < cipherTextLines.length; rowIndex++) {
+      frequencySelectedRows[rowIndex] = [0];
     }
 
     let textFrequencies = [];
-    if (Object.keys(frequencySelectedRows).length !== 0) {
-      const frequencies = alphabet.split('').map(() => 0);
-      for (let rowIndex in frequencySelectedRows) {
-        let selectedSubLines = frequencySelectedRows[rowIndex];
-        if (!selectedSubLines.length) {
-          continue;
-        }
-        selectedSubLines.sort();
-
-        let currencyFrequencyAnalysis = cipherTextLines[rowIndex].frequencyAnalysis;
-
-        if (selectedSubLines[0] === 0) {
-          for (let i = 0; i < alphabet.length; i++) {
-            frequencies[i] += currencyFrequencyAnalysis[i];
-          }
-          selectedSubLines = selectedSubLines.slice(1);
-        }
-
-        if (rowIndex in appliedSubstitutions && selectedSubLines.length) {
-          for (let [index, subLineSubstitutions] of appliedSubstitutions[rowIndex].entries()) {
-            for (let {count, type} of subLineSubstitutions) {
-              for (let k = 0; k < count; k++) {
-                currencyFrequencyAnalysis = applySubstitutionToFreq(substitutions[type-2], currencyFrequencyAnalysis, alphabet);
-              }
-            }
-
-            if (index + 1 === selectedSubLines[0]) {
-              for (let i = 0; i < alphabet.length; i++) {
-                frequencies[i] += currencyFrequencyAnalysis[i];
-              }
-              selectedSubLines = selectedSubLines.slice(1);
-              if (!selectedSubLines.length) {
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      const freqMap = new Map(range(0, alphabet.length).map(i => [alphabet.substring(i, i+1), frequencies[i]]));
-      textFrequencies = normalizeAndSortFrequencies(freqMap.entries());
-    }
+    // if (Object.keys(frequencySelectedRows).length !== 0) {
+    //   const frequencies = alphabet.split('').map(() => 0);
+    //   for (let rowIndex in frequencySelectedRows) {
+    //     let selectedSubLines = frequencySelectedRows[rowIndex];
+    //     if (!selectedSubLines.length) {
+    //       continue;
+    //     }
+    //     selectedSubLines.sort();
+    //
+    //     let currencyFrequencyAnalysis = cipherTextLines[rowIndex].frequencyAnalysis;
+    //
+    //     if (selectedSubLines[0] === 0) {
+    //       for (let i = 0; i < alphabet.length; i++) {
+    //         frequencies[i] += currencyFrequencyAnalysis[i];
+    //       }
+    //       selectedSubLines = selectedSubLines.slice(1);
+    //     }
+    //
+    //     if (rowIndex in appliedSubstitutions && selectedSubLines.length) {
+    //       for (let [index, subLineSubstitutions] of appliedSubstitutions[rowIndex].entries()) {
+    //         for (let {count, type} of subLineSubstitutions) {
+    //           for (let k = 0; k < count; k++) {
+    //             currencyFrequencyAnalysis = applySubstitutionToFreq(substitutions[type-2], currencyFrequencyAnalysis, alphabet);
+    //           }
+    //         }
+    //
+    //         if (index + 1 === selectedSubLines[0]) {
+    //           for (let i = 0; i < alphabet.length; i++) {
+    //             frequencies[i] += currencyFrequencyAnalysis[i];
+    //           }
+    //           selectedSubLines = selectedSubLines.slice(1);
+    //           if (!selectedSubLines.length) {
+    //             break;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    //
+    //   const freqMap = new Map(range(0, alphabet.length).map(i => [alphabet.substring(i, i+1), frequencies[i]]));
+    //   textFrequencies = normalizeAndSortFrequencies(freqMap.entries());
+    // }
 
     return {...state, frequencyAnalysis: textFrequencies};
   }

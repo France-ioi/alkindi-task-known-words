@@ -87,16 +87,15 @@ function taskRefreshReducer (state, _action) {
 }
 
 function getTaskAnswer (state) {
-  const {decipheredText, substitutions} = state;
-  const {lines, appliedSubstitutions, decipheredLetters} = decipheredText;
+  const {decipheredText, substitution} = state;
+  const {lines, decipheredLetters} = decipheredText;
 
   const answer = lines.map(({deciphered}) => {
     return deciphered.map(cell => cell.hint || cell.value || cell.ciphered || ' ').join('');
   });
 
   const answerState = {
-    substitutions: substitutions.map(substitution => substitution.map(cell => cell.editable)),
-    appliedSubstitutions: appliedSubstitutions,
+    substitution: substitution.map(cell => cell.editable),
     decipheredLetters,
   };
 
@@ -108,7 +107,7 @@ function getTaskAnswer (state) {
 
 function taskAnswerLoaded (state, {payload: {answer}}) {
   const {alphabet} = state.taskData;
-  const {substitutions: subs, decipheredLetters, appliedSubstitutions} = answer;
+  const {substitutions: subs, decipheredLetters} = answer;
 
   const substitutions = subs.map(substitution => {
     return loadSubstitution(alphabet, substitution);
@@ -118,7 +117,6 @@ function taskAnswerLoaded (state, {payload: {answer}}) {
     substitutions: {$set: substitutions},
     decipheredText: {
       decipheredLetters: {$set: decipheredLetters},
-      appliedSubstitutions: {$set: appliedSubstitutions},
     }
   });
 }

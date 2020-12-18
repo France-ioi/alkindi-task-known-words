@@ -48,37 +48,58 @@ export function markSubstitutionConflicts (substitution) {
   return update(substitution, changes);
 }
 
-export function applySubstitutions (substitutions, rank) {
-  const result = {rank, locks: 0, trace: []};
-
-  for (let substitution of substitutions) {
-    applySubstitution(substitution, result);
-  }
-
-  return result;
-}
-
 export function wrapAround (value, mod) {
   return ((value % mod) + mod) % mod;
 }
 
+export function wrapAroundLines (currentPosition, cellMove, lines) {
+  let {rowIndex, position} = currentPosition;
+  position += cellMove;
+  while (position > lines[rowIndex].length - 1 || position < 0) {
+    if (position > lines[rowIndex].length - 1) {
+      position = wrapAround(position, lines[rowIndex].length);
+      rowIndex++;
+      if (rowIndex > lines.length - 1) {
+        rowIndex = 0;
+      }
+    } else if (position < 0) {
+      rowIndex--;
+      if (rowIndex < 0) {
+        rowIndex = lines.length - 1;
+      }
+      position = wrapAround(position, lines[rowIndex].length);
+    }
+  }
+
+  return {rowIndex, position};
+}
+
 export function applySubstitutionToText (substitution, currentCipherText, alphabet) {
+  let symbolValue = {};
+
+  if (null !== substitution) {
+    let i = 0;
+    for (let cell of substitution) {
+      for (let symbol of cell.editable) {
+        symbolValue[symbol] = {
+          letter: alphabet.substring(i, i+1),
+          locked: cell.locked,
+        };
+      }
+      i++;
+    }
+  }
+
   return currentCipherText.map(({value, locked}) => {
     if (null === value) {
       return {value, locked};
     }
 
-    const position = alphabet.indexOf(value);
-    if (-1 === position) {
-      throw 'Letter not found in alphabet: ' + value;
-    }
-
-    const cell = substitution[position];
-    if (cell.editable) {
-      const newLetter = cell.editable;
+    if (value in symbolValue) {
+      const newLetter = symbolValue[value].letter;
       return {
         value: newLetter,
-        locked: (true === locked || undefined === locked) && cell.locked,
+        locked: (true === locked || undefined === locked) && symbolValue[value].locked,
       };
     } else {
       return {

@@ -9,21 +9,13 @@ export default class DecipheredTextCell extends React.PureComponent {
       width: Number(cellWidth) + 'px',
     };
 
-    const editableCellStyle = {
-      textAlign: 'center',
-      cursor: 'text',
-      width: '100%',
-      height: '20px',
-      lineHeight: '20px',
-    };
-
     return (
       <div
-        className={`letter-cell deciphered-clear-cell ${hint ? 'is-hint' : (value ? 'is-value' : 'is-ciphered')}`}
+        className={`letter-cell deciphered-clear-cell ${hint ? 'is-hint' : (value ? 'is-value' : 'is-ciphered')} ${ciphered === ' ' ? 'is-space' : ''}`}
         onClick={this.startEditing}
         style={columnStyle}
       >
-        <div style={editableCellStyle}>
+        <div className="deciphered-clear-cell-inside">
           {editing
             ? <input ref={this.refInput} onChange={this.cellChanged} onKeyDown={this.keyDown} onBlur={this.blur}
                      type='text' value={value || ''} style={{width: cellWidth + 'px', height: '20px', textAlign: 'center', padding: '0', outline: '0', border: 'none', background: 'transparent'}} />
@@ -65,7 +57,10 @@ export default class DecipheredTextCell extends React.PureComponent {
   };
   startEditing = () => {
     const {hint, position, ciphered, rowIndex} = this.props;
-    if (ciphered === undefined) return;
+    if (ciphered === undefined || ' ' === ciphered) {
+      return;
+    }
+
     if (hint) {
       this.endEditing();
     } else {

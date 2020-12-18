@@ -21,7 +21,7 @@ function taskInitReducer (state) {
     return state;
   }
 
-  return {...state, cipheredText, taskReady: true};
+  return {...state, cipheredText};
 }
 
 function taskRefreshReducer (state) {
@@ -42,27 +42,44 @@ function cipheredTextScrolledReducer (state, {payload: {scrollTop}}) {
 }
 
 function CipherTextViewSelector (state) {
-  const {actions, cipheredText, taskData: {cipherTextLines}} = state;
+  const {actions, cipheredText, taskData: {cipherText}} = state;
   const {cipheredTextResized, cipheredTextScrolled} = actions;
   const {width, scrollTop} = cipheredText;
 
   return {
-    cipherTextLines,
+    cipherText,
     cipheredTextResized,
     cipheredTextScrolled,
     width,
     scrollTop,
-    rowsCount: cipherTextLines.length,
   };
+}
+
+function cutTextIntoLines (text, symbolsPerLine) {
+  const words = text.split(' ');
+  const lines = [];
+
+  for (let word of words) {
+    let currentLine = lines[lines.length - 1];
+    if (lines.length && currentLine.length + word.length + 1 <= symbolsPerLine) {
+      lines[lines.length - 1] += ' ' + word;
+    } else {
+      lines.push(word);
+    }
+  }
+
+  return lines;
 }
 
 class CipherTextView extends React.PureComponent {
 
   render () {
-    const {width, scrollTop, rowsCount, cipherTextLines} = this.props;
+    const {width, scrollTop, cipherText} = this.props;
 
     const height = pageRows * cellHeight;
-    const pageColumns = Math.max(5, Math.floor(width / cellWidth));
+    const pageColumns = Math.max(5, Math.floor((width - 20) / cellWidth));
+    const cipherTextLines = cutTextIntoLines(cipherText, pageColumns);
+    const rowsCount = cipherTextLines.length;
     const bottom = rowsCount * cellHeight;
     const maxTop = Math.max(0, bottom + 1 - pageRows * cellHeight);
     const minMaxedScrollTop = Math.min(maxTop, scrollTop);

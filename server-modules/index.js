@@ -45,7 +45,7 @@ module.exports.requestHint = function (args, callback) {
 
 module.exports.gradeAnswer = function (args, task_data, callback) {
   const {
-    privateData: {clearText},
+    privateData: {clearTextLines},
     publicData: {version},
   } = generateTaskData(args.task);
 
@@ -55,14 +55,17 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
 
   let correctLines = 0;
   let incorrectLine = null;
-  const line = clearTextLines[i].clearText;
-  if (line.substring(0, version.charactersDisplayLength) === answerText[i].substring(0, version.charactersDisplayLength)) {
-    correctLines++;
-  } else if (null === incorrectLine) {
-    incorrectLine = [
-      line.substring(0, version.charactersDisplayLength),
-      answerText[i].substring(0, version.charactersDisplayLength)
-    ];
+
+  for (let i = 0; i < clearTextLines.length; i++) {
+    const line = clearTextLines[i];
+    if (line === answerText[i]) {
+      correctLines++;
+    } else if (null === incorrectLine) {
+      incorrectLine = [
+        line,
+        answerText[i],
+      ];
+    }
   }
 
   const hintsRequested = getHintsRequested(args.answer.hints_requested);
@@ -76,14 +79,12 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
   if (correctLines === clearTextLines.length) {
     const hintsCost = (hints1Count * 1) + (hints2Count * 10);
     score = Math.max(0, 100 - hintsCost);
-    message = `Bravo, vous avez bien déchiffré le texte. Vous avez demandé la valeur de ${hints1Count} lettre${hints1Count > 1 ? "s" : ""}
-      et de ${hints2Count} ligne${hints2Count > 1 ? "s" : ""} en indice, ce qui vous a coûté ${hintsCost} points.`;
+    message = `Bravo, vous avez bien déchiffré le texte. ${false !== version.hints ? `Vous avez demandé la valeur de ${hints1Count} lettre${hints1Count > 1 ? "s" : ""}
+      et de ${hints2Count} ligne${hints2Count > 1 ? "s" : ""} en indice, ce qui vous a coûté ${hintsCost} points.` : ''}`;
   } else {
     score = 0;
     message =
-      `Il y a ${clearTextLines.length - correctLines} ${clearTextLines.length - correctLines > 1 ? 'lignes différentes' : 'ligne différente'} entre votre texte déchiffré et le texte d'origine.
-      Voici un exemple : ${incorrectLine[1]}
-    `;
+      `Il y a ${clearTextLines.length - correctLines} ${clearTextLines.length - correctLines > 1 ? 'lignes différentes' : 'ligne différente'} entre votre texte déchiffré et le texte d'origine.`;
   }
 
   callback(null, {score, message});
@@ -156,15 +157,27 @@ function extractWords (text, wordsCount, rng0) {
 }
 
 const versions = {
-  1: {
-    version: 1,
-    clearTextLength: 400,
-    symbolsPerLine: 35,
+  // For test only
+  '0.1': {
+    version: '0.1',
+    clearTextLength: 30,
+    symbolsPerLine: 19,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
     hints: false,
     frequencyAnalysis: false,
-    explanation: 'Bienvenue sur ce nouveau sujet 2 ! Il est en cours de création',
+    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
+  },
+
+  1: {
+    version: 1,
+    clearTextLength: 400,
+    symbolsPerLine: 19,
+    extractedWordsCount: 40,
+    symbolsPerLetterMax: 1,
+    hints: false,
+    frequencyAnalysis: false,
+    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
 };
 
@@ -172,7 +185,7 @@ generateTaskData({
   params: {
     version: 1,
   },
-  random_seed: 5,
+  random_seed: 9,
 });
 
 // module.exports.generateTaskData =
@@ -185,9 +198,9 @@ function generateTaskData (task) {
   const {substitution, symbols} = generateSubstitution(rng0, new Array(26).fill(1));
 
   const clearText = generate(rng0, clearTextLength, clearTextLength + 20, true);
+  const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
 
   const cipherText = applySubstitution(clearText, substitution, rng0);
-
   const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
 
   const clearWords = extractWords(clearText, extractedWordsCount, rng0);
@@ -206,6 +219,7 @@ function generateTaskData (task) {
 
   const publicData = {
     alphabet,
+    cipherText,
     cipherTextLines,
     symbols,
     hints,
@@ -215,6 +229,7 @@ function generateTaskData (task) {
 
   const privateData = {
     clearText,
+    clearTextLines,
   };
 
   console.log(publicData, privateData, substitution);
