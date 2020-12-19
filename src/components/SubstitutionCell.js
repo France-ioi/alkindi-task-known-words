@@ -52,7 +52,7 @@ export const SubstitutionCell = ({
     drop: (item) => {
       if (item.letter && !isLocked) {
         onChangeChar(rank, item.position, item.letter);
-        if (item.rank) {
+        if (undefined !== item.rank) {
           onChangeChar(item.rank, item.position, null);
         }
       }
