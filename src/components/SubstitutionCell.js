@@ -61,12 +61,12 @@ export const SubstitutionCell = ({
 
   drop(ref);
 
-  const isActive = canDrop && isOver && editableChar.length < symbolsPerLetterMax;
+  const isActive = canDrop && isOver && editableChar.length < symbolsPerLetterMax && !isLocked;
 
   return (
     <div ref={ref} className={`substitution-letter ${isActive ? 'substitution-letter-hover' : ''}`}>
       {staticCell}
-      {range(0, editableChar.length).map((index) =>
+      {range(0, symbolsPerLetterMax).map((index) =>
         <DraggableUsedLetter
           key={index}
           position={index}

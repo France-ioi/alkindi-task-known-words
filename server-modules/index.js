@@ -208,9 +208,9 @@ const versions = {
     version: '2.3',
     clearTextLength: 400,
     symbolsPerLine: 27,
+    symbolsCountToUse: 50,
     extractedWordsCount: 20,
     symbolsPerLetterMax: 3,
-    symbolsCountToUse: 50,
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
@@ -228,14 +228,19 @@ generateTaskData({
 // module.exports.generateTaskData =
 function generateTaskData (task) {
   const version = task.params.version || 1;
-  let {clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse} = versions[version];
+  let {clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax} = versions[version];
 
   const rng0 = seedrandom(task.random_seed + 16);
 
   const symbolsToUse = new Array(alphabet.length).fill(1);
   for (let i = 0; i < (symbolsCountToUse - alphabet.length); i++) {
-    const letter = Math.floor(rng0() * alphabet.length);
-    symbolsToUse[letter]++;
+    while (true) {
+      const letter = Math.floor(rng0() * alphabet.length);
+      if (symbolsToUse[letter] < symbolsPerLetterMax) {
+        symbolsToUse[letter]++;
+        break;
+      }
+    }
   }
 
   const {substitution, symbols} = generateSubstitution(rng0, symbolsToUse);

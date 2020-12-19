@@ -181,7 +181,7 @@ function decipheredCellEditCancelledReducer (state, _action) {
 }
 
 function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, position}}) {
-  const {decipheredText: {lines}, taskData: {clearWords}} = state;
+  const {decipheredText: {lines}, taskData: {clearWords, cipherTextLines}} = state;
   const newWord = clearWords[wordIndex];
 
   if (null === rowIndex) {
@@ -193,7 +193,7 @@ function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, posi
   const newLine = lines[rowIndex].words;
   for (let i = 0; i < newWord.length; i++) {
     const newPosition = position + i;
-    if (newLine[newPosition] || newPosition > lines[rowIndex].ciphered.length - 1) {
+    if (newLine[newPosition] || newPosition > lines[rowIndex].ciphered.length - 1 || cipherTextLines[rowIndex].substring(newPosition, newPosition+1) === ' ') {
       return state;
     }
   }
@@ -399,7 +399,7 @@ class DecipheredTextView extends React.PureComponent {
                     {/*Clear text row*/}
                     {false !== version.clearTextLine &&
                       <div style={{position: 'absolute', top: `${3*cellHeight}px`}}>
-                        {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint}, resultIndex) =>
+                        {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint, result, word}, resultIndex) =>
                           <div
                             key={resultIndex}
                             style={{
@@ -417,6 +417,8 @@ class DecipheredTextView extends React.PureComponent {
                               position={resultIndex}
                               editing={editingDecipher && editingDecipher.rowIndex === rowIndex && editingDecipher.position === resultIndex}
                               ciphered={ciphered}
+                              result={result}
+                              word={word}
                               value={value}
                               hint={hint}
                               cellWidth={cellWidth}
