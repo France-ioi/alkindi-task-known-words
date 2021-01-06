@@ -9,7 +9,7 @@
 
     <!-- task -->
     <script src="/vendor.js?v=2"></script>
-    <script src="/bundle.js?v=2"></script>
+    <script src="/index.js?v=2"></script>
 </head>
 <body>
     <div id="container" class="container"></div>
@@ -31,6 +31,6 @@
                   // }
             }
         };
-        window.app = ReactTask.run(document.getElementById('container'), options);
+        window.app = runReact(document.getElementById('container'), options);
     </script>
 </body>

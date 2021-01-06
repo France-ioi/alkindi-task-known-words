@@ -9,7 +9,7 @@ import {DraggableWord} from "./components/DraggableWord";
 import {DroppableWordSlot} from "./components/DroppableWordSlot";
 
 const cellWidth = 22; // px
-const cellHeight = 32; // px
+const cellHeight = 24; // px
 const pageRows = 4;
 const height = 300;
 
@@ -280,7 +280,7 @@ class DecipheredTextView extends React.PureComponent {
     let currentTop = 0;
     let firstRow = 0;
     for (let rowIndex = 0; rowIndex < lines.length; rowIndex++) {
-      let lineHeight = (false !== version.clearTextLine ? 4 : 3) * cellHeight;
+      let lineHeight = (false !== version.clearTextLine ? 4 : 3) * cellHeight + 20;
       linesHeight.push({
         height: lineHeight,
         top: currentTop,
@@ -338,7 +338,7 @@ class DecipheredTextView extends React.PureComponent {
                   }
                 </div>
                 <div>
-                  <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 2}px`}}>
+                  <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 20 - 2}px`}}>
                     {/*Ciphered*/}
                     <div style={{position: 'absolute', top: `0px`}}>
                       {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
@@ -356,8 +356,13 @@ class DecipheredTextView extends React.PureComponent {
                       {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
                         <div
                           key={resultIndex}
-                          className={`${value === ' ' ? 'is-space' : ''}`}
-                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                          className={`
+                            droppable-word-container
+                            ${value === ' ' ? 'is-space' : ''}
+                            ${resultIndex === 0 || lines[rowIndex].words[resultIndex-1] || lines[rowIndex].ciphered[resultIndex-1] === ' ' ? 'is-word-beginning' : ''}
+                            ${resultIndex === lines[rowIndex].ciphered.length - 1 || lines[rowIndex].words[resultIndex+1] || lines[rowIndex].ciphered[resultIndex+1] === ' ' ? 'is-word-end' : ''}
+                          `}
+                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px'}}
                         >
                           {!lines[rowIndex].words[resultIndex] &&
                             <DroppableWordSlot

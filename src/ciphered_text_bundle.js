@@ -92,9 +92,10 @@ class CipherTextView extends React.PureComponent {
               data-index={index}
             >
               {cipherTextLines[index].split('').slice(0, pageColumns).map((cell, index) =>
-                <div key={index} className="letter-cell" style={{
+                <div key={index} className="letter-cell letter-cell-not-bold" style={{
                   position: 'absolute',
                   left: `${textWidth + index * cellWidth}px`,
+                  top: '0px',
                   width: `${cellWidth}px`,
                   height: `${cellHeight}px`,
                   lineHeight: `${cellHeight}px`,

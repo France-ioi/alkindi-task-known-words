@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import Collapsable from './tools/collapsable';
+import {Collapsable} from '@france-ioi/react-task-lib';
 import {DndProvider} from 'react-dnd';
 import {HTML5Backend} from 'react-dnd-html5-backend';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

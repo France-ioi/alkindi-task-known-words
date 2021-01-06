@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "description": "Alkindi task: known words",
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack -p --config webpack.prod.js",
+    "build": "cross-env NODE_ENV=production webpack --config webpack.prod.js",
     "watch": "webpack --progress --colors --watch",
     "lint": "npx eslint src",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "cross-env NODE_ENV=development webpack-dev-server --hot --inline --host 0.0.0.0 --port 8080",
-    "build:dev": "cross-env NODE_ENV=production webpack -p --progress --colors"
+    "start:dev": "cross-env NODE_ENV=development webpack serve --hot --inline --host 0.0.0.0 --port 8081",
+    "build:dev": "cross-env NODE_ENV=production webpack --progress --colors"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.36",
     "@babel/node": "^7.0.0-beta.36",
@@ -30,17 +30,19 @@
     "eslint": "^4.15.0",
     "file-loader": "^1.1.6",
     "style-loader": "^0.19.1",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "url-loader": "^0.6.2",
-    "webpack": "3.12.0",
-    "webpack-bundle-analyzer": "^4.2.0",
-    "webpack-cli": "3.3.0",
-    "webpack-dev-server": "3.0.0",
+    "webpack": "^4.44.2",
+    "webpack-bundle-analyzer": "^4.3.0",
+    "webpack-cli": "^4.3.1",
+    "webpack-dev-server": "^3.11.1",
     "write-file-webpack-plugin": "^4.5.0"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@fortawesome/react-fontawesome": "^0.1.13",
+    "@france-ioi/react-task-lib": "^1.0.1",
     "alphanum-increment": "^0.0.2",
     "array.prototype.fill": "^1.0.2",
     "bootstrap": "^4.5.1",

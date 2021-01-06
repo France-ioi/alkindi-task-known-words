@@ -131,6 +131,6 @@ function taskStateLoaded (state, {payload: {_dump}}) {
   return state;
 }
 
-export function run (container, options) {
+window.runReact = function (container, options) {
   return algoreaReactTask(container, options, TaskBundle);
-}
+};

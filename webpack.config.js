@@ -1,9 +1,10 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const SRC = path.resolve(__dirname, 'src');
 const isDev = process.env.NODE_ENV !== 'production';
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const config = module.exports = {
   entry: {
@@ -11,10 +12,9 @@ const config = module.exports = {
   },
   output: {
     path: path.join(__dirname, 'build'),
-    filename: 'bundle.js',
     publicPath: '/',
     libraryTarget: 'var',
-    library: 'ReactTask'
+    library: 'ReactTask',
   },
   module: {
     rules: [
@@ -46,11 +46,18 @@ const config = module.exports = {
       {
         test: /.*\.(eot|ttf|woff(2)?)(\?v=\d+\.\d+\.\d+)?/,
         use: [{loader: 'file-loader', options: {name: 'fonts/[name].[ext]'}}]
-      }
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [{loader: 'url-loader'}],
+      },
     ]
   },
   resolve: {
-    extensions: ['.js']
+    extensions: ['.js'],
+    alias: {
+      '~': path.resolve(__dirname, 'assets'),
+    },
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -60,13 +67,6 @@ const config = module.exports = {
     }),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      filename: 'vendor.js',
-      minChunks: function (module) {
-        return /node_modules/.test(module.resource);
-      }
-    }),
     new CopyWebpackPlugin([
       {from: 'bebras-modules/', to: 'bebras-modules/'},
       {from: `index${!isDev ? '.prod' : ''}.html`, to: 'index.html'}
@@ -82,7 +82,18 @@ const config = module.exports = {
     compress: true,
     port: 8080,
     hot: true
-  }
+  },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendor",
+          chunks: "all",
+        },
+      },
+    },
+  },
 };
 
 // config.plugins.push(new BundleAnalyzerPlugin());
@@ -90,11 +101,6 @@ const config = module.exports = {
 if (isDev) {
   config.devtool = 'inline-source-map';
 } else {
-  config.plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    })
-  );
+  // config.optimization.minimize = false;
+  config.optimization.minimizer = [new UglifyJSPlugin()];
 }
