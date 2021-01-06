@@ -395,7 +395,7 @@ class DecipheredTextView extends React.PureComponent {
                         <div
                           key={resultIndex}
                           className={`letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
-                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `18px`, lineHeight: `18px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
                         >
                           {value}
                         </div>
