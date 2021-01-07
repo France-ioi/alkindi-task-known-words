@@ -7,6 +7,7 @@ import DecipheredTextCell from "./components/DecipheredTextCell";
 import {put, select, takeEvery} from "redux-saga/effects";
 import {DraggableWord} from "./components/DraggableWord";
 import {DroppableWordSlot} from "./components/DroppableWordSlot";
+import {CustomDragLayer} from "./components/CustomDragLayer";
 
 const cellWidth = 22; // px
 const cellHeight = 24; // px
@@ -327,6 +328,7 @@ class DecipheredTextView extends React.PureComponent {
           <div className="block-header-category">
             Texte chiffré
           </div>
+          <CustomDragLayer/>
           <div
             ref={this.refTextBox}
             onScroll={this.onScroll}
