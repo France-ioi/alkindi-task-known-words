@@ -202,7 +202,7 @@ const versions = {
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (plusieurs symboles par lettre).',
+    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 ou 2 symboles).',
   },
   '2.3': {
     version: '2.3',
@@ -214,7 +214,7 @@ const versions = {
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (plusieurs symboles par lettre).',
+    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
   },
 };
 

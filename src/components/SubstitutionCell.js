@@ -54,6 +54,10 @@ export const SubstitutionCell = ({
   };
 
   const toggleLockContainer = (e) => {
+    if (editableChar.length === 0) {
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
     setLocksContainerOpen(!locksContainerOpen);
@@ -70,7 +74,12 @@ export const SubstitutionCell = ({
     </div>
   );
   const lock = (
-    <div className="substitution-lock" onClick={(e) => toggleLockContainer(e)} key="lock" ref={lockBottom}>
+    <div
+      className={`substitution-lock ${editableChar.length === 0 ? 'substitution-lock-empty' : ''}`}
+      onClick={(e) => toggleLockContainer(e)}
+      key="lock"
+      ref={lockBottom}
+    >
       <FontAwesomeIcon icon={editableChar.filter(symbol => symbolsLocked[symbol]).length ? 'lock' : 'lock-open'} />
     </div>
   );
@@ -99,14 +108,14 @@ export const SubstitutionCell = ({
     <div ref={ref} className={`substitution-letter ${isActive ? 'substitution-letter-hover' : ''}`}>
       {staticCell}
       {locksContainerOpen && <div className="substitution-locks-container" ref={locksContainerRef}>
-        {range(0, symbolsPerLetterMax).map((index) =>
+        {range(0, Math.min(editableChar.length, symbolsPerLetterMax)).map((index) =>
           <div className="substitution-lock-symbol" onClick={() => lockClicked(index)} key={index}>
             <FontAwesomeIcon icon={editableChar[index] && symbolsLocked[editableChar[index]] ? 'lock' : 'lock-open'} />
             <div className="substitution-lock-caret"/>
           </div>
         )}
       </div>}
-      {range(0, symbolsPerLetterMax).map((index) =>
+      {range(0, Math.min(editableChar.length + 1, symbolsPerLetterMax)).map((index) =>
         <DraggableUsedLetter
           key={index}
           position={index}
@@ -117,6 +126,14 @@ export const SubstitutionCell = ({
           isLocked={editableChar[index] && symbolsLocked[editableChar[index]]}
           isConflict={isConflict}
           rank={rank}
+        />
+      )}
+      {range(0, Math.max(symbolsPerLetterMax - editableChar.length - 1)).map((index) =>
+        <div
+          key={index}
+          className={`
+            substitution-letter-empty
+          `}
         />
       )}
       {lock}

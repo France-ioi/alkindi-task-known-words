@@ -619,6 +619,10 @@ hr {
   align-items: center;
   justify-content: center;
 }
+.substitution-letter-empty {
+  height: 20px;
+  margin-bottom: 2px;
+}
 .substitution-letter-editable input {
   color: #30242B;
   font-size: 16px;
@@ -660,6 +664,10 @@ hr {
   font-size: 13px;
   text-align: center;
   cursor: pointer;
+}
+.substitution-lock-empty {
+  color: #979797;
+  cursor: not-allowed;
 }
 
 .unused-letter {
