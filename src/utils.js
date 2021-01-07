@@ -7,7 +7,6 @@ export function loadSubstitution (alphabet, initialValues) {
     $cells[cellIndex] = {
       rank: cellIndex,
       editable: initialValues && initialValues[cellIndex] ? initialValues[cellIndex] : [],
-      locked: false,
       conflict: false,
     };
   });
@@ -16,10 +15,6 @@ export function loadSubstitution (alphabet, initialValues) {
   substitution = markSubstitutionConflicts(substitution);
 
   return substitution;
-}
-
-export function lockSubstitutionCell (substitution, rank, locked) {
-  return update(substitution, {[rank]: {locked: {$set: locked}}});
 }
 
 export function markSubstitutionConflicts (substitution) {
@@ -74,7 +69,7 @@ export function wrapAroundLines (currentPosition, cellMove, lines) {
   return {rowIndex, position};
 }
 
-export function applySubstitutionToText (substitution, currentCipherText, alphabet) {
+export function applySubstitutionToText (substitution, currentCipherText, alphabet, symbolsLocked) {
   let symbolValue = {};
 
   if (null !== substitution) {
@@ -83,7 +78,7 @@ export function applySubstitutionToText (substitution, currentCipherText, alphab
       for (let symbol of cell.editable) {
         symbolValue[symbol] = {
           letter: alphabet.substring(i, i+1),
-          locked: cell.locked,
+          locked: symbolsLocked[symbol],
         };
       }
       i++;

@@ -63,7 +63,7 @@ function decipheredTextLateReducer (state, _action) {
 }
 
 function applyRefreshedData (state) {
-  let {taskData: {cipherTextLines, alphabet, hints, clearWords}, decipheredText, substitution} = state;
+  let {taskData: {cipherTextLines, alphabet, hints, clearWords}, decipheredText, substitution, symbolsLocked} = state;
   const {decipheredLetters, placedWords} = decipheredText;
 
   const hintsIndex = buildHintsIndex(hints);
@@ -98,7 +98,7 @@ function applyRefreshedData (state) {
       };
     });
 
-    let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet);
+    let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet, symbolsLocked);
     for (let i = 0; i < substitutionResult.length; i++) {
       deciphered[i].result = substitutionResult[i].value;
     }
