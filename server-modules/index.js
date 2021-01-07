@@ -245,7 +245,7 @@ function generateTaskData (task) {
 
   const {substitution, symbols} = generateSubstitution(rng0, symbolsToUse);
 
-  const clearText = generate(rng0, clearTextLength, clearTextLength + 20, true).trim();
+  const clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
   const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
 
   const cipherText = applySubstitution(clearText, substitution, rng0);

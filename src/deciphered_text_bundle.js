@@ -303,6 +303,21 @@ class DecipheredTextView extends React.PureComponent {
       wordsByRow[rowIndex].push({position, wordIndex});
     }
 
+    const wordSlotsByRow = lines.map(line => {
+      const words = line.ciphered.join('').slice(0, pageColumns).split(' ');
+      const slots = [];
+      let currentPosition = 0;
+      for (let word of words) {
+        slots.push({
+          position: currentPosition,
+          letters: word.length
+        });
+        currentPosition += word.length + 1;
+      }
+
+      return slots;
+    });
+
     return (
       <div>
         <div>
@@ -353,25 +368,21 @@ class DecipheredTextView extends React.PureComponent {
                     </div>
                     {/*Words*/}
                     <div style={{position: 'absolute', top: `${cellHeight}px`}}>
-                      {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
+                      {wordSlotsByRow[rowIndex].map(({position, letters}, resultIndex) =>
                         <div
                           key={resultIndex}
                           className={`
                             droppable-word-container
-                            ${value === ' ' ? 'is-space' : ''}
-                            ${resultIndex === 0 || lines[rowIndex].words[resultIndex-1] || lines[rowIndex].ciphered[resultIndex-1] === ' ' ? 'is-word-beginning' : ''}
-                            ${resultIndex === lines[rowIndex].ciphered.length - 1 || lines[rowIndex].words[resultIndex+1] || lines[rowIndex].ciphered[resultIndex+1] === ' ' ? 'is-word-end' : ''}
                           `}
-                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px'}}
+                          style={{position: 'absolute', left: `${position * cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px'}}
                         >
-                          {!lines[rowIndex].words[resultIndex] &&
-                            <DroppableWordSlot
-                              rowIndex={rowIndex}
-                              position={resultIndex}
-                              ciphered={value}
-                              onWordMoved={this.onWordMoved}
-                            />
-                          }
+                          <DroppableWordSlot
+                            rowIndex={rowIndex}
+                            position={position}
+                            occupied={lines[rowIndex].words[position] ? lines[rowIndex].words : null}
+                            letters={letters}
+                            onWordMoved={this.onWordMoved}
+                          />
                         </div>
                       )}
                       {rowIndex in wordsByRow && wordsByRow[rowIndex].map(({position, wordIndex}) =>
@@ -394,8 +405,8 @@ class DecipheredTextView extends React.PureComponent {
                       {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
                         <div
                           key={resultIndex}
-                          className={`letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
-                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `18px`, lineHeight: `18px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                          className={`deciphered-result-cell letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
+                          style={{left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`}}
                         >
                           {value}
                         </div>
@@ -451,13 +462,13 @@ class DecipheredTextView extends React.PureComponent {
           >
             {range(0, 2).map(column =>
               <div className="word-column" key={column}>
-                {(0 === column ? clearWords.slice(0, Math.floor(clearWords.length / 2)) : clearWords.slice(Math.floor(clearWords.length / 2), 100)).map((word, wordIndex) =>
+                {(0 === column ? clearWords.slice(0, Math.round(clearWords.length / 2)) : clearWords.slice(Math.round(clearWords.length / 2), 100)).map((word, wordIndex) =>
                   <div
-                    key={column * Math.floor(clearWords.length / 2) + wordIndex}
-                    className={`word-container ${(column * Math.floor(clearWords.length / 2) + wordIndex) in placedWords ? 'word-used' : ''}`}
+                    key={column * Math.round(clearWords.length / 2) + wordIndex}
+                    className={`word-container ${(column * Math.round(clearWords.length / 2) + wordIndex) in placedWords ? 'word-used' : ''}`}
                   >
                     <DraggableWord
-                      wordIndex={column * Math.floor(clearWords.length / 2) + wordIndex}
+                      wordIndex={column * Math.round(clearWords.length / 2) + wordIndex}
                       word={word}
                     />
                   </div>
