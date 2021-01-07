@@ -159,8 +159,12 @@ body {
   cursor: initial;
 }
 
+.big-droppable-word-slot {
+  height: 20px;
+  margin-left: -20px;
+  padding-left: 20px;
+}
 .droppable-word-slot {
-  width: 100%;
   height: 20px;
   background: #EFEFEF;
   box-shadow: inset 3px 3px rgba(0,0,0,0.16);

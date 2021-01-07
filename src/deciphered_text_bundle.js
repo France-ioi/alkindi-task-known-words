@@ -181,7 +181,7 @@ function decipheredCellEditCancelledReducer (state, _action) {
 }
 
 function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, position}}) {
-  const {decipheredText: {lines}, taskData: {clearWords, cipherTextLines}} = state;
+  const {decipheredText: {lines, placedWords}, taskData: {clearWords, cipherTextLines}} = state;
   const newWord = clearWords[wordIndex];
 
   if (null === rowIndex) {
@@ -193,7 +193,10 @@ function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, posi
   const newLine = lines[rowIndex].words;
   for (let i = 0; i < newWord.length; i++) {
     const newPosition = position + i;
-    if (newLine[newPosition] || newPosition > lines[rowIndex].ciphered.length - 1 || cipherTextLines[rowIndex].substring(newPosition, newPosition+1) === ' ') {
+    if ((newLine[newPosition] && !(placedWords[wordIndex][rowIndex] === rowIndex && placedWords[wordIndex][position] === position))
+      || newPosition > lines[rowIndex].ciphered.length - 1
+      || cipherTextLines[rowIndex].substring(newPosition, newPosition+1) === ' '
+    ) {
       return state;
     }
   }

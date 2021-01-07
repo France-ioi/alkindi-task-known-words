@@ -2,7 +2,8 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Collapsable} from '@france-ioi/react-task-lib';
 import {DndProvider} from 'react-dnd';
-import {HTML5Backend} from 'react-dnd-html5-backend';
+import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
+import MultiBackend from 'react-dnd-multi-backend';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 function WorkspaceSelector (state) {
@@ -24,7 +25,7 @@ class Workspace extends React.PureComponent {
     } = this.props;
     return (
       <div>
-        <DndProvider backend={HTML5Backend}>
+        <DndProvider backend={MultiBackend} options={HTML5toTouch}>
           <div className="content-block" style={{marginTop: '10px'}}>
             <div className="content-block-header">
               <FontAwesomeIcon icon="sticky-note" />

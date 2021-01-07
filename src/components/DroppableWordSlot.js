@@ -36,10 +36,12 @@ export const DroppableWordSlot = ({
   const isActive = canDrop && isOver && validItem;
 
   return (
-    <div ref={ref} className={`droppable-word-slot ${isActive ? 'substitution-letter-hover' : ''}`}>
-      {range(0, letters).map((letter, letterIndex) =>
-        <div className={`droppable-word-letter ${occupied && !occupied[position + letterIndex] ? 'droppable-word-letter-occupied' : ''}`} key={letterIndex}/>
-      )}
+    <div ref={ref} className="big-droppable-word-slot">
+      <div className={`droppable-word-slot ${isActive ? 'substitution-letter-hover' : ''}`}>
+        {range(0, letters).map((letter, letterIndex) =>
+          <div className={`droppable-word-letter ${occupied && !occupied[position + letterIndex] ? 'droppable-word-letter-occupied' : ''}`} key={letterIndex}/>
+        )}
+      </div>
     </div>
   );
 };
