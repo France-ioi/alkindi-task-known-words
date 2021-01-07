@@ -30,7 +30,9 @@ export const DraggableUsedLetter = ({isConflict, isLocked, cellChanged, editable
   });
 
   const opacity = isDragging ? 0 : 1;
-  drag(ref);
+  if (canDrag) {
+    drag(ref);
+  }
 
   return (
     <div

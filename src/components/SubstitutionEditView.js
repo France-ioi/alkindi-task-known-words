@@ -5,7 +5,7 @@ import {DraggableUnusedLetter} from "./DraggableUnusedLetter";
 
 export default class SubstitutionEditView extends React.PureComponent {
   render () {
-    const {alphabet, substitution, editing, nonUsedSymbols, pinned, symbolsPerLetterMax} = this.props;
+    const {alphabet, substitution, editing, nonUsedSymbols, pinned, symbolsPerLetterMax, symbolsLocked} = this.props;
 
     return (
       <div style={{marginTop: "10px", position: 'relative'}}>
@@ -24,13 +24,13 @@ export default class SubstitutionEditView extends React.PureComponent {
                   staticChar={staticChar} editRank={rank}
                   pinned={pinned}
                   symbolsPerLetterMax={symbolsPerLetterMax}
+                  symbolsLocked={symbolsLocked}
                   editableChar={editable} isLocked={locked} isHint={hint} isConflict={conflict}
                   isEditing={isEditing} isActive={isActive} highlighted={false}
                   onChangeChar={this.props.onChangeChar}
                   onChangeLocked={this.props.onChangeLocked}
                   onEditingStarted={this.props.onEditingStarted}
                   onEditingCancelled={this.props.onEditingCancelled}
-                  onEditingMoved={this.props.onEditingMoved}
                 />
               );
             })}
@@ -47,12 +47,6 @@ export default class SubstitutionEditView extends React.PureComponent {
             )) : 'Aucune'}
           </div>
         </div>
-
-        {/*<div className="substitution-pin-link">*/}
-        {/*  <a onClick={() => this.props.onPinSubstitution()}>*/}
-        {/*    <FontAwesomeIcon icon={pinned ? 'times' : 'thumbtack'} />*/}
-        {/*  </a>*/}
-        {/*</div>*/}
       </div>
     );
   }

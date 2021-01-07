@@ -560,6 +560,40 @@ hr {
   margin-left: 1px;
   width: 20px;
   border-radius: 2px;
+  position: relative;
+}
+.substitution-locks-container {
+  position: absolute;
+  top: 22px;
+  left: -23px;
+}
+.substitution-lock-symbol {
+  margin-top: 1px;
+  margin-bottom: 1px;
+  font-size: 13px;
+  cursor: pointer;
+  height: 21px;
+  background: #88BB88;
+  border-radius: 2px;
+  padding: 0 4px;
+  position: relative;
+  z-index: 1;
+  width: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.substitution-lock-caret {
+  content: '';
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 10px solid #88BB88;
+  position: absolute;
+  left: 18px;
+  top: 6px;
+  z-index: -1;
 }
 .substitution-letter-hover {
   background-color: #88BB8850 !important;
@@ -682,6 +716,16 @@ hr {
   text-align: right;
 }
 
+.deciphered-result-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  height: 20px;
+  top: 4px;
+  border-radius: 2px;
+}
+
 .deciphered-substitutions-container {
   border: 1px solid #979797;
   border-radius: 50px;
@@ -709,9 +753,8 @@ hr {
 .word-container:last-child .draggable-word {
   margin-bottom: 20px !important;
 }
-.word-container.word-used .draggable-word-letter {
-  background-color: #88BB88;
-  color: #fff;
+.word-container.word-used .draggable-word-letter, .word-container.word-used .draggable-word-handle {
+  background-color: #CECDCD;
 }
 .word-column {
   flex-grow: 1;

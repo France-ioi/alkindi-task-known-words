@@ -29,6 +29,7 @@ export const DroppableWordSlot = ({
 
   return (
     <div ref={ref} className={`droppable-word-slot ${isActive ? 'substitution-letter-hover' : ''} ${ciphered === ' ' ? 'is-space' : ''}`}>
+
     </div>
   );
 };
