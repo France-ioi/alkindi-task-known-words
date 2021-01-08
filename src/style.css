@@ -152,6 +152,9 @@ body {
   color: #30242B;
   opacity: 0.2;
 }
+.deciphered-clear-cell.is-editing {
+  opacity: 1;
+}
 .deciphered-clear-cell.is-space {
   opacity: 0;
 }
@@ -159,11 +162,6 @@ body {
   cursor: initial;
 }
 
-.big-droppable-word-slot {
-  height: 20px;
-  margin-left: -20px;
-  padding-left: 20px;
-}
 .droppable-word-slot {
   height: 20px;
   background: #EFEFEF;
@@ -631,7 +629,14 @@ hr {
   height: 20px;
   margin-bottom: 2px;
 }
-.substitution-letter-editable input {
+.substitution-letter-editable-inside {
+  text-align: center;
+  cursor: text;
+  height: 18px;
+  line-height: 18px;
+  font-size: 16px;
+}
+.substitution-letter-editable-inside input {
   color: #30242B;
   font-size: 16px;
   line-height: 18px;
@@ -656,7 +661,7 @@ hr {
 .substitution-letter-conflict input {
   color: #fff;
 }
-.substitution-letter-movable {
+.substitution-letter-movable .substitution-letter-editable-inside {
   cursor: move;
 }
 .substitution-edit {
@@ -738,7 +743,7 @@ hr {
   justify-content: center;
   position: absolute;
   height: 20px;
-  top: 4px;
+  top: 2px;
   border-radius: 2px;
 }
 

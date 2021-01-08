@@ -145,6 +145,9 @@ class SubstitutionBundleView extends React.PureComponent {
   };
   onChangeChar = (rank, position, symbol, moveToNext = true) => {
     this.props.dispatch({type: this.props.substitutionCellCharChanged, payload: {rank, position, symbol, moveToNext}});
+    if (!moveToNext) {
+      this.props.dispatch({type: this.props.substitutionCellEditCancelled});
+    }
   };
   onChangeLocked = (symbol, isLocked) => {
     this.props.dispatch({type: this.props.substitutionCellLockChanged, payload: {symbol, isLocked}});

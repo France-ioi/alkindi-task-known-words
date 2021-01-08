@@ -11,7 +11,7 @@ export default class DecipheredTextCell extends React.PureComponent {
 
     return (
       <div
-        className={`letter-cell deciphered-clear-cell ${hint ? 'is-hint' : (value ? 'is-value' : 'is-ciphered')} ${ciphered === ' ' ? 'is-space' : ''}`}
+        className={`letter-cell deciphered-clear-cell ${hint ? 'is-hint' : (value ? 'is-value' : 'is-ciphered')} ${ciphered === ' ' ? 'is-space' : ''} ${editing ? 'is-editing' : ''}`}
         onClick={this.startEditing}
         style={columnStyle}
       >

@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {useDrag} from 'react-dnd';
 
-export const DraggableUsedLetter = ({isConflict, isLocked, cellChanged, editableChar, startEditing, rank, position}) => {
+export const DraggableUsedLetter = ({isLocked, cellChanged, editableChar, startEditing, rank, position}) => {
   const ref = useRef(null);
 
   const refInput = React.createRef();
@@ -38,11 +38,9 @@ export const DraggableUsedLetter = ({isConflict, isLocked, cellChanged, editable
     <div
       ref={ref}
       className={`
-        substitution-letter-editable
+        substitution-letter-editable-inside
         letter-cell
-        ${canDrag ? 'substitution-letter-movable' : ''}
-        ${isLocked ? 'substitution-letter-locked' : ''}
-        ${isConflict ? 'substitution-letter-conflict' : ''}
+       
       `}
       onClick={startEditing}
       style={{opacity}}

@@ -92,9 +92,9 @@ export const SubstitutionCell = ({
     }),
     drop: (item) => {
       if (item.letter) {
-        onChangeChar(rank, item.position, item.letter);
+        onChangeChar(rank, item.position, item.letter, false);
         if (undefined !== item.rank) {
-          onChangeChar(item.rank, item.position, null);
+          onChangeChar(item.rank, item.position, null, false);
         }
       }
     },
@@ -116,17 +116,24 @@ export const SubstitutionCell = ({
         )}
       </div>}
       {range(0, Math.min(editableChar.length + 1, symbolsPerLetterMax)).map((index) =>
-        <DraggableUsedLetter
-          key={index}
-          position={index}
-          cellChanged={(value) => cellChanged(value, index)}
-          startEditing={() => startEditing(index)}
-          editableChar={editableChar[index]}
-          isEditing={isEditing}
-          isLocked={editableChar[index] && symbolsLocked[editableChar[index]]}
-          isConflict={isConflict}
-          rank={rank}
-        />
+        <div
+          className={`
+            substitution-letter-editable
+            ${editableChar && editableChar[index] && !symbolsLocked[editableChar[index]] ? 'substitution-letter-movable' : ''}
+            ${editableChar[index] && symbolsLocked[editableChar[index]] ? 'substitution-letter-locked' : ''}
+          `}
+        >
+          <DraggableUsedLetter
+            key={index}
+            position={index}
+            cellChanged={(value) => cellChanged(value, index)}
+            startEditing={() => startEditing(index)}
+            editableChar={editableChar[index]}
+            isLocked={editableChar[index] && symbolsLocked[editableChar[index]]}
+            isEditing={isEditing}
+            rank={rank}
+          />
+        </div>
       )}
       {range(0, Math.max(symbolsPerLetterMax - editableChar.length - 1)).map((index) =>
         <div
