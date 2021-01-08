@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {range} from 'range';
@@ -8,6 +8,7 @@ import {put, select, takeEvery} from "redux-saga/effects";
 import {DraggableWord} from "./components/DraggableWord";
 import {DroppableWordSlot} from "./components/DroppableWordSlot";
 import {CustomDragLayer} from "./components/CustomDragLayer";
+import {Collapsable} from '@france-ioi/react-task-lib';
 
 const cellWidth = 22; // px
 const cellHeight = 24; // px
@@ -331,173 +332,173 @@ class DecipheredTextView extends React.PureComponent {
 
     return (
       <div>
-        <div>
-          <div className="block-header-category">
-            Texte chiffré
-          </div>
-          <CustomDragLayer innerRef={dragLayerRef}/>
-          <div
-            ref={this.refTextBox}
-            onScroll={this.onScroll}
-            className="custom-scrollable"
-            style={{position: 'relative', width: '100%', height: height && `${height}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
-          >
-            {(visibleRows || []).map((rowIndex) =>
+        <div className="main-block">
+          <Collapsable title={<div className="main-block-header">{"Texte chiffré"}</div>}>
+            <div>
+              <CustomDragLayer innerRef={dragLayerRef}/>
               <div
-                key={rowIndex}
-                className="cipher-line is-bordered"
-                style={{position: 'absolute', top: `${linesHeight[rowIndex].top}px`, width: '100%'}}
+                ref={this.refTextBox}
+                onScroll={this.onScroll}
+                className="custom-scrollable"
+                style={{position: 'relative', width: '100%', height: height && `${height}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
               >
-                <div className="cipher-line-subrows">
-                  <div>
-                    Chiffré
-                  </div>
-                  <div>
-                    Mots placés
-                  </div>
-                  <div>
-                    Substitution
-                  </div>
-                  {false !== version.clearTextLine &&
-                    <div>
-                      Clair
-                    </div>
-                  }
-                </div>
-                <div>
-                  <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 20 - 2}px`}}>
-                    {/*Ciphered*/}
-                    <div style={{position: 'absolute', top: `0px`}}>
-                      {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
-                        <div
-                          key={resultIndex}
-                          className={`letter-cell deciphered-ciphered-cell ${value === ' ' ? 'is-space' : ''}`}
-                          style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 12}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
-                        >
-                          {value}
-                        </div>
-                      )}
-                    </div>
-                    {/*Words*/}
-                    <div style={{position: 'absolute', top: `${cellHeight}px`}}>
-                      {wordSlotsByRow[rowIndex].map(({position, letters, ref}, resultIndex) =>
-                        <div
-                          key={resultIndex}
-                          className={`
-                            droppable-word-container
-                          `}
-                          style={{position: 'absolute', left: `${position * cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px'}}
-                        >
-                          <DroppableWordSlot
-                            innerRef={ref}
-                            rowIndex={rowIndex}
-                            position={position}
-                            occupied={lines[rowIndex].words[position] ? lines[rowIndex].words : null}
-                            letters={letters}
-                            draggingWord={this.state.dragElement}
-                          />
-                        </div>
-                      )}
-                      {rowIndex in wordsByRow && wordsByRow[rowIndex].map(({position, wordIndex}) =>
-                        <div
-                          key={wordIndex}
-                          style={{position: 'absolute', left: `${position * cellWidth}px`, width: `${cellWidth}px`, top: '2px'}}
-                          className={`word-container`}
-                        >
-                          <DraggableWord
-                            minimal={true}
-                            wordIndex={wordIndex}
-                            wordSlotsByRow={wordSlotsByRow}
-                            dragLayerRef={dragLayerRef}
-                            word={clearWords[wordIndex]}
-                            onWordMoved={this.onWordMoved}
-                            onDragStart={(item) => this.setDragElement(item)}
-                            onDragEnd={() => this.setDragElement(null)}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    {/*Result*/}
-                    <div style={{position: 'absolute', top: `${2*cellHeight}px`}}>
-                      {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
-                        <div
-                          key={resultIndex}
-                          className={`deciphered-result-cell letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
-                          style={{left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`}}
-                        >
-                          {value ? value : (lines[rowIndex].ciphered[resultIndex] !== ' ' ? '_' : '')}
-                        </div>
-                      )}
-                    </div>
-                    {/*Clear text row*/}
-                    {false !== version.clearTextLine &&
-                      <div style={{position: 'absolute', top: `${3*cellHeight}px`}}>
-                        {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint, result, word}, resultIndex) =>
-                          <div
-                            key={resultIndex}
-                            style={{
-                              position: 'absolute',
-                              left: `${resultIndex * cellWidth}px`,
-                              width: `${cellWidth}px`,
-                              height: `${cellHeight}px`,
-                              display: 'flex',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <DecipheredTextCell
-                              key={resultIndex}
-                              rowIndex={rowIndex}
-                              position={resultIndex}
-                              editing={editingDecipher && editingDecipher.rowIndex === rowIndex && editingDecipher.position === resultIndex}
-                              ciphered={ciphered}
-                              result={result}
-                              word={word}
-                              value={value}
-                              hint={hint}
-                              cellWidth={cellWidth}
-                              onChangeChar={this.onChangeChar}
-                              onEditingStarted={this.onEditingStarted}
-                              onEditingCancelled={this.onEditingCancelled}
-                              onEditingMoved={this.onEditingMoved}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>)}
-            <div style={{position: 'absolute', top: `${bottom}px`, width: '1px', height: '1px'}} />
-          </div>
-        </div>
-        <div>
-          <div className="block-header-category">
-            Mots du clair
-          </div>
-          <div
-            className="custom-scrollable words-container"
-          >
-            {range(0, 2).map(column =>
-              <div className="word-column" key={column}>
-                {(0 === column ? clearWords.slice(0, Math.round(clearWords.length / 2)) : clearWords.slice(Math.round(clearWords.length / 2), 100)).map((word, wordIndex) =>
+                {(visibleRows || []).map((rowIndex) =>
                   <div
-                    key={column * Math.round(clearWords.length / 2) + wordIndex}
-                    className={`word-container ${(column * Math.round(clearWords.length / 2) + wordIndex) in placedWords ? 'word-used' : ''}`}
+                    key={rowIndex}
+                    className="cipher-line is-bordered"
+                    style={{position: 'absolute', top: `${linesHeight[rowIndex].top}px`, width: '100%'}}
                   >
-                    <DraggableWord
-                      wordIndex={column * Math.round(clearWords.length / 2) + wordIndex}
-                      wordSlotsByRow={wordSlotsByRow}
-                      dragLayerRef={dragLayerRef}
-                      word={word}
-                      onWordMoved={this.onWordMoved}
-                      onDragStart={(item) => this.setDragElement(item)}
-                      onDragEnd={() => this.setDragElement(null)}
-                    />
-                  </div>
-                )}
+                    <div className="cipher-line-subrows">
+                      <div>
+                        Chiffré
+                      </div>
+                      <div>
+                        Mots placés
+                      </div>
+                      <div>
+                        Substitution
+                      </div>
+                      {false !== version.clearTextLine &&
+                        <div>
+                          Clair
+                        </div>
+                      }
+                    </div>
+                    <div>
+                      <div style={{position: 'relative', width: `100%`, height: `${linesHeight[rowIndex].height - 20 - 2}px`}}>
+                        {/*Ciphered*/}
+                        <div style={{position: 'absolute', top: `0px`}}>
+                          {lines[rowIndex].ciphered.slice(0, pageColumns).map((value, resultIndex) =>
+                            <div
+                              key={resultIndex}
+                              className={`letter-cell deciphered-ciphered-cell ${value === ' ' ? 'is-space' : ''}`}
+                              style={{position: 'absolute', left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 12}px`, textAlign: 'center', top: '4px', borderRadius: '2px'}}
+                            >
+                              {value}
+                            </div>
+                          )}
+                        </div>
+                        {/*Words*/}
+                        <div style={{position: 'absolute', top: `${cellHeight}px`}}>
+                          {wordSlotsByRow[rowIndex].map(({position, letters, ref}, resultIndex) =>
+                            <div
+                              key={resultIndex}
+                              className={`
+                                droppable-word-container
+                              `}
+                              style={{position: 'absolute', left: `${position * cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px'}}
+                            >
+                              <DroppableWordSlot
+                                innerRef={ref}
+                                rowIndex={rowIndex}
+                                position={position}
+                                occupied={lines[rowIndex].words[position] ? lines[rowIndex].words : null}
+                                letters={letters}
+                                draggingWord={this.state.dragElement}
+                              />
+                            </div>
+                          )}
+                          {rowIndex in wordsByRow && wordsByRow[rowIndex].map(({position, wordIndex}) =>
+                            <div
+                              key={wordIndex}
+                              style={{position: 'absolute', left: `${position * cellWidth}px`, width: `${cellWidth}px`, top: '2px'}}
+                              className={`word-container`}
+                            >
+                              <DraggableWord
+                                minimal={true}
+                                wordIndex={wordIndex}
+                                wordSlotsByRow={wordSlotsByRow}
+                                dragLayerRef={dragLayerRef}
+                                word={clearWords[wordIndex]}
+                                onWordMoved={this.onWordMoved}
+                                onDragStart={(item) => this.setDragElement(item)}
+                                onDragEnd={() => this.setDragElement(null)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                        {/*Result*/}
+                        <div style={{position: 'absolute', top: `${2*cellHeight}px`}}>
+                          {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
+                            <div
+                              key={resultIndex}
+                              className={`deciphered-result-cell letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
+                              style={{left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`}}
+                            >
+                              {value ? value : (lines[rowIndex].ciphered[resultIndex] !== ' ' ? <span className="deciphered-underscore">_</span> : '')}
+                            </div>
+                          )}
+                        </div>
+                        {/*Clear text row*/}
+                        {false !== version.clearTextLine &&
+                          <div style={{position: 'absolute', top: `${3*cellHeight}px`}}>
+                            {lines[rowIndex].deciphered.slice(0, pageColumns).map(({ciphered, value, hint, result, word}, resultIndex) =>
+                              <div
+                                key={resultIndex}
+                                style={{
+                                  position: 'absolute',
+                                  left: `${resultIndex * cellWidth}px`,
+                                  width: `${cellWidth}px`,
+                                  height: `${cellHeight}px`,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <DecipheredTextCell
+                                  key={resultIndex}
+                                  rowIndex={rowIndex}
+                                  position={resultIndex}
+                                  editing={editingDecipher && editingDecipher.rowIndex === rowIndex && editingDecipher.position === resultIndex}
+                                  ciphered={ciphered}
+                                  result={result}
+                                  word={word}
+                                  value={value}
+                                  hint={hint}
+                                  cellWidth={cellWidth}
+                                  onChangeChar={this.onChangeChar}
+                                  onEditingStarted={this.onEditingStarted}
+                                  onEditingCancelled={this.onEditingCancelled}
+                                  onEditingMoved={this.onEditingMoved}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>)}
+                <div style={{position: 'absolute', top: `${bottom}px`, width: '1px', height: '1px'}} />
               </div>
-            )}
-          </div>
+            </div>
+          </Collapsable>
+        </div>
+        <div className="main-block">
+          <Collapsable title={<div className="main-block-header">{"Mots du clair"}</div>}>
+            <div
+              className="custom-scrollable words-container"
+            >
+              {range(0, 2).map(column =>
+                <div className="word-column" key={column}>
+                  {(0 === column ? clearWords.slice(0, Math.round(clearWords.length / 2)) : clearWords.slice(Math.round(clearWords.length / 2), 100)).map((word, wordIndex) =>
+                    <div
+                      key={column * Math.round(clearWords.length / 2) + wordIndex}
+                      className={`word-container ${(column * Math.round(clearWords.length / 2) + wordIndex) in placedWords ? 'word-used' : ''}`}
+                    >
+                      <DraggableWord
+                        wordIndex={column * Math.round(clearWords.length / 2) + wordIndex}
+                        wordSlotsByRow={wordSlotsByRow}
+                        dragLayerRef={dragLayerRef}
+                        word={word}
+                        onWordMoved={this.onWordMoved}
+                        onDragStart={(item) => this.setDragElement(item)}
+                        onDragEnd={() => this.setDragElement(null)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </Collapsable>
         </div>
       </div>
     );

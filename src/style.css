@@ -82,6 +82,9 @@ body {
 .deciphered-locked {
   background-color: #ddd;
 }
+.deciphered-underscore {
+  color: #979797;
+}
 .deciphered-conflict {
   background-color: #F23459 !important;
   color: #fff;
@@ -150,7 +153,7 @@ body {
 }
 .deciphered-clear-cell.is-ciphered {
   color: #30242B;
-  opacity: 0.2;
+  opacity: 0.35;
 }
 .deciphered-clear-cell.is-editing {
   opacity: 1;

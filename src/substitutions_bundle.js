@@ -9,7 +9,7 @@ function appInitReducer (state, _action) {
   return {
     ...state,
     substitution: null,
-    pinnedSubstitution: null,
+    pinnedSubstitution: false,
     editingSubstitution: {},
     symbolsLocked: {},
   };
@@ -54,9 +54,7 @@ function substitutionCellLockChangedReducer (state, {payload: {symbol, isLocked}
 }
 
 function substitutionPinnedReducer (state) {
-  if (state.pinnedSubstitution) {
     return update(state, {pinnedSubstitution: {$set: !state.pinnedSubstitution}});
-  }
 }
 
 function SubstitutionSelector (state) {
@@ -112,10 +110,30 @@ class SubstitutionBundleView extends React.PureComponent {
   });
 
   render () {
-    const {alphabet, substitution, editingSubstitution, symbols, symbolsPerLetterMax, symbolsLocked} = this.props;
+    const {alphabet, substitution, editingSubstitution, symbols, symbolsPerLetterMax, symbolsLocked, pinnedSubstitution} = this.props;
 
     return (
         <div>
+          {pinnedSubstitution && this.state.showPinned &&
+          <div className="substitution-pinned">
+            <div className="container" style={{width: '800px'}}>
+              <SubstitutionEditView
+                substitution={substitution}
+                nonUsedSymbols={this.nonUsedSymbols(substitution, alphabet, symbols)}
+                alphabet={alphabet}
+                editing={editingSubstitution}
+                symbolsPerLetterMax={symbolsPerLetterMax}
+                symbolsLocked={symbolsLocked}
+                pinned
+                onChangeChar={this.onChangeChar}
+                onChangeLocked={this.onChangeLocked}
+                onEditingStarted={this.onEditingStarted}
+                onEditingCancelled={this.onEditingCancelled}
+                onPinSubstitution={this.onPinSubstitution}
+              />
+            </div>
+          </div>
+          }
           <div
             className="substitution-edit"
             ref={this.substitutionRef}

@@ -2,6 +2,7 @@ import {range} from "range";
 import {SubstitutionCell} from "./SubstitutionCell";
 import React from "react";
 import {DraggableUnusedLetter} from "./DraggableUnusedLetter";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 export default class SubstitutionEditView extends React.PureComponent {
   render () {
@@ -46,6 +47,12 @@ export default class SubstitutionEditView extends React.PureComponent {
               <DraggableUnusedLetter key={index} letter={letter}/>
             )) : 'Aucune'}
           </div>
+        </div>
+
+        <div className="substitution-pin-link">
+          <a onClick={() => this.props.onPinSubstitution(0)}>
+            <FontAwesomeIcon icon={pinned ? 'times' : 'thumbtack'} />
+          </a>
         </div>
       </div>
     );

@@ -69,7 +69,7 @@ export const SubstitutionCell = ({
   useOutsideAlerter(locksContainerRef);
 
   const staticCell = (
-    <div className="substitution-letter-static letter-cell">
+    <div className="substitution-letter-static letter-cell" key="static-cell">
       {staticChar || '\u00A0'}
     </div>
   );
@@ -109,7 +109,7 @@ export const SubstitutionCell = ({
       {staticCell}
       {locksContainerOpen && <div className="substitution-locks-container" ref={locksContainerRef}>
         {range(0, Math.min(editableChar.length, symbolsPerLetterMax)).map((index) =>
-          <div className="substitution-lock-symbol" onClick={() => lockClicked(index)} key={index}>
+          <div className="substitution-lock-symbol" onClick={() => lockClicked(index)} key={'locks' + index}>
             <FontAwesomeIcon icon={editableChar[index] && symbolsLocked[editableChar[index]] ? 'lock' : 'lock-open'} />
             <div className="substitution-lock-caret"/>
           </div>
@@ -117,6 +117,7 @@ export const SubstitutionCell = ({
       </div>}
       {range(0, Math.min(editableChar.length + 1, symbolsPerLetterMax)).map((index) =>
         <div
+          key={'editable' + index}
           className={`
             substitution-letter-editable
             ${editableChar && editableChar[index] && !symbolsLocked[editableChar[index]] ? 'substitution-letter-movable' : ''}
@@ -124,7 +125,6 @@ export const SubstitutionCell = ({
           `}
         >
           <DraggableUsedLetter
-            key={index}
             position={index}
             cellChanged={(value) => cellChanged(value, index)}
             startEditing={() => startEditing(index)}
@@ -137,7 +137,7 @@ export const SubstitutionCell = ({
       )}
       {range(0, Math.max(symbolsPerLetterMax - editableChar.length - 1)).map((index) =>
         <div
-          key={index}
+          key={'remaining' + index}
           className={`
             substitution-letter-empty
           `}

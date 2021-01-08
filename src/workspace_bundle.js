@@ -40,11 +40,7 @@ class Workspace extends React.PureComponent {
               <CipheredText />
             </Collapsable>
           </div>
-          <div className="main-block">
-            <Collapsable title={<div className="main-block-header">{"Déchiffrement"}</div>}>
-              <DecipheredText />
-            </Collapsable>
-          </div>
+          <DecipheredText />
           {this.props.version.hints !== false &&
             <div className="main-block hints">
               <Collapsable title={<div className="main-block-header">{"Indices"}</div>}>
