@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {range} from 'range';
@@ -276,6 +276,10 @@ function DecipheredTextViewSelector (state) {
 }
 
 class DecipheredTextView extends React.PureComponent {
+  constructor (props) {
+    super(props);
+    this.state = {dragElement: null};
+  }
   render () {
     const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords} = this.props;
     const rowsCount = lines.length;
@@ -314,7 +318,8 @@ class DecipheredTextView extends React.PureComponent {
       for (let word of words) {
         slots.push({
           position: currentPosition,
-          letters: word.length
+          letters: word.length,
+          ref: React.createRef(),
         });
         currentPosition += word.length + 1;
       }
@@ -322,13 +327,15 @@ class DecipheredTextView extends React.PureComponent {
       return slots;
     });
 
+    const dragLayerRef = React.createRef();
+
     return (
       <div>
         <div>
           <div className="block-header-category">
             Texte chiffré
           </div>
-          <CustomDragLayer/>
+          <CustomDragLayer innerRef={dragLayerRef}/>
           <div
             ref={this.refTextBox}
             onScroll={this.onScroll}
@@ -349,7 +356,7 @@ class DecipheredTextView extends React.PureComponent {
                     Mots placés
                   </div>
                   <div>
-                    Résultat
+                    Substitution
                   </div>
                   {false !== version.clearTextLine &&
                     <div>
@@ -373,7 +380,7 @@ class DecipheredTextView extends React.PureComponent {
                     </div>
                     {/*Words*/}
                     <div style={{position: 'absolute', top: `${cellHeight}px`}}>
-                      {wordSlotsByRow[rowIndex].map(({position, letters}, resultIndex) =>
+                      {wordSlotsByRow[rowIndex].map(({position, letters, ref}, resultIndex) =>
                         <div
                           key={resultIndex}
                           className={`
@@ -382,11 +389,12 @@ class DecipheredTextView extends React.PureComponent {
                           style={{position: 'absolute', left: `${position * cellWidth}px`, height: `${cellHeight - 10}px`, lineHeight: `${cellHeight - 10}px`, textAlign: 'center', top: '4px'}}
                         >
                           <DroppableWordSlot
+                            innerRef={ref}
                             rowIndex={rowIndex}
                             position={position}
                             occupied={lines[rowIndex].words[position] ? lines[rowIndex].words : null}
                             letters={letters}
-                            onWordMoved={this.onWordMoved}
+                            draggingWord={this.state.dragElement}
                           />
                         </div>
                       )}
@@ -399,8 +407,12 @@ class DecipheredTextView extends React.PureComponent {
                           <DraggableWord
                             minimal={true}
                             wordIndex={wordIndex}
+                            wordSlotsByRow={wordSlotsByRow}
+                            dragLayerRef={dragLayerRef}
                             word={clearWords[wordIndex]}
                             onWordMoved={this.onWordMoved}
+                            onDragStart={(item) => this.setDragElement(item)}
+                            onDragEnd={() => this.setDragElement(null)}
                           />
                         </div>
                       )}
@@ -413,7 +425,7 @@ class DecipheredTextView extends React.PureComponent {
                           className={`deciphered-result-cell letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
                           style={{left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`}}
                         >
-                          {value}
+                          {value ? value : (lines[rowIndex].ciphered[resultIndex] !== ' ' ? '_' : '')}
                         </div>
                       )}
                     </div>
@@ -474,7 +486,12 @@ class DecipheredTextView extends React.PureComponent {
                   >
                     <DraggableWord
                       wordIndex={column * Math.round(clearWords.length / 2) + wordIndex}
+                      wordSlotsByRow={wordSlotsByRow}
+                      dragLayerRef={dragLayerRef}
                       word={word}
+                      onWordMoved={this.onWordMoved}
+                      onDragStart={(item) => this.setDragElement(item)}
+                      onDragEnd={() => this.setDragElement(null)}
                     />
                   </div>
                 )}
@@ -490,6 +507,11 @@ class DecipheredTextView extends React.PureComponent {
     const width = element.clientWidth;
     const height = element.clientHeight;
     this.props.dispatch({type: this.props.decipheredTextResized, payload: {width, height}});
+  };
+  setDragElement = (item) => {
+    this.setState({
+      dragElement: item,
+    });
   };
   onScroll = () => {
     const scrollTop = this._textBox.scrollTop;

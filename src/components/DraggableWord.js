@@ -9,19 +9,56 @@ function getStyles (isDragging) {
   };
 }
 
-export const DraggableWord = ({word, wordIndex, minimal, onWordMoved}) => {
-  const ref = useRef(null);
+export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, dragLayerRef, innerRef}) => {
+  const ref = innerRef ? innerRef : useRef(null);
 
   const [{isDragging}, drag, preview] = useDrag({
     item: {type: 'word', word, wordIndex},
+    begin () {
+      onDragStart(word);
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: (item, monitor) => {
-      const didDrop = monitor.didDrop();
-      if (!didDrop && onWordMoved) {
-        onWordMoved(wordIndex, null, null);
+    end: () => {
+      const itemPosition = dragLayerRef.current.getBoundingClientRect();
+      const possibleWords = [];
+      for (let rowIndex of Object.keys(wordSlotsByRow)) {
+        const row = wordSlotsByRow[rowIndex];
+        for (let {position, ref} of row) {
+          if (ref.current) {
+            const wordPosition = ref.current.getBoundingClientRect();
+            const overlap = !(itemPosition.right < wordPosition.left ||
+              itemPosition.left > wordPosition.right ||
+              itemPosition.bottom < wordPosition.top ||
+              itemPosition.top > wordPosition.bottom);
+            if (overlap) {
+              const overlapDistance =
+                Math.min(itemPosition.right - wordPosition.left, wordPosition.right - itemPosition.left)
+                + Math.min(itemPosition.bottom - wordPosition.top, wordPosition.bottom - itemPosition.top);
+              possibleWords.push({
+                overlapDistance,
+                rowIndex,
+                position,
+              });
+            }
+          }
+        }
       }
+
+      if (!possibleWords.length) {
+        onDragEnd();
+        onWordMoved(wordIndex, null, null);
+        return;
+      }
+
+      possibleWords.sort((a, b) => {
+        return b.overlapDistance - a.overlapDistance;
+      });
+
+      const {rowIndex, position} = possibleWords[0];
+      onDragEnd();
+      onWordMoved(wordIndex, rowIndex, position);
     },
   });
 
