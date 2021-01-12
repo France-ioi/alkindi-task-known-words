@@ -9,7 +9,7 @@ function getStyles (isDragging) {
   };
 }
 
-export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, dragLayerRef, innerRef}) => {
+export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, innerRef}) => {
   const ref = innerRef ? innerRef : useRef(null);
 
   const [{isDragging}, drag, preview] = useDrag({
@@ -21,13 +21,15 @@ export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStar
       isDragging: monitor.isDragging(),
     }),
     end: () => {
-      const itemPosition = dragLayerRef.current.getBoundingClientRect();
+      let dragLayerRef = document.getElementById('custom-drag-layer');
+      const itemPosition = dragLayerRef.getBoundingClientRect();
       const possibleWords = [];
       for (let rowIndex of Object.keys(wordSlotsByRow)) {
         const row = wordSlotsByRow[rowIndex];
-        for (let {position, ref} of row) {
-          if (ref.current) {
-            const wordPosition = ref.current.getBoundingClientRect();
+        for (let {position, wordSlotId} of row) {
+          const element = document.getElementById(wordSlotId);
+          if (element) {
+            const wordPosition = element.getBoundingClientRect();
             const overlap = !(itemPosition.right < wordPosition.left ||
               itemPosition.left > wordPosition.right ||
               itemPosition.bottom < wordPosition.top ||

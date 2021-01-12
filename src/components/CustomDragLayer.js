@@ -20,12 +20,13 @@ function getItemStyles (initialOffset, currentOffset) {
   let {x, y} = currentOffset;
   const transform = `translate(${x}px, ${y}px)`;
   return {
+    display: 'inline-block',
     transform,
     WebkitTransform: transform,
   };
 }
 
-export const CustomDragLayer = ({innerRef}) => {
+export const CustomDragLayer = () => {
   const {item, itemType, isDragging, initialOffset, currentOffset} = useDragLayer((monitor) => ({
     item: monitor.getItem(),
     itemType: monitor.getItemType(),
@@ -42,9 +43,8 @@ export const CustomDragLayer = ({innerRef}) => {
 
   return (
     <div style={layerStyles}>
-      <div style={getItemStyles(initialOffset, currentOffset)}>
+      <div style={getItemStyles(initialOffset, currentOffset)} id="custom-drag-layer">
         <DraggableWord
-          innerRef={innerRef}
           wordIndex={wordIndex}
           word={word}
           onWordMoved={() => {}}

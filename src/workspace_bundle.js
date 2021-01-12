@@ -5,6 +5,7 @@ import {DndProvider} from 'react-dnd';
 import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
 import MultiBackend from 'react-dnd-multi-backend';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {CustomDragLayer} from "./components/CustomDragLayer";
 
 function WorkspaceSelector (state) {
   const {
@@ -26,6 +27,7 @@ class Workspace extends React.PureComponent {
     return (
       <div>
         <DndProvider backend={MultiBackend} options={HTML5toTouch}>
+          <CustomDragLayer/>
           <div className="content-block" style={{marginTop: '10px'}}>
             <div className="content-block-header">
               <FontAwesomeIcon icon="sticky-note" />
