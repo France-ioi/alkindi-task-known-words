@@ -283,8 +283,6 @@ function generateTaskData (task) {
     clearTextLines,
   };
 
-  console.log(publicData, privateData, substitution);
-
   return {publicData, privateData};
 }
 
