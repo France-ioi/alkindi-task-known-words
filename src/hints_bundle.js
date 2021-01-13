@@ -100,7 +100,6 @@ class Hints extends React.PureComponent {
         return (
             <div className="hints-container">
                 <Modal
-                  className="substitution-modal"
                   show={this.state.modalShow}
                   onHide={() => this.setModalShow(false)}
                   size="lg"

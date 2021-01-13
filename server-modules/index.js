@@ -4,6 +4,73 @@ var {shuffle} = require("shuffle");
 var {range} = require("range");
 
 /**
+ * Versions configuration
+ */
+
+const versions = {
+  // For test only
+  '0.1': {
+    version: '0.1',
+    clearTextLength: 30,
+    symbolsPerLine: 27,
+    extractedWordsCount: 40,
+    symbolsPerLetterMax: 1,
+    hints: false,
+    frequencyAnalysis: false,
+    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
+  },
+
+  1: {
+    version: 1,
+    clearTextLength: 400,
+    symbolsPerLine: 27,
+    extractedWordsCount: 40,
+    symbolsPerLetterMax: 1,
+    hints: false,
+    frequencyAnalysis: false,
+    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
+  },
+
+  '2.1': {
+    version: '2.1',
+    clearMessage: "J AI COURS D AIKIDO CETTE SEMAINE AVEC LE PROFESSEUR QUI A DES CHEVEUX ROSES",
+    clearTextLength: 100,
+    symbolsPerLine: 27,
+    symbolsCountToUse: 26,
+    extractedWordsCount: 100,
+    symbolsPerLetterMax: 1,
+    hints: false,
+    frequencyAnalysis: false,
+    clearTextLine: false,
+    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (un symbole par lettre).',
+  },
+  '2.2': {
+    version: '2.2',
+    clearTextLength: 300,
+    symbolsPerLine: 27,
+    symbolsCountToUse: 35,
+    extractedWordsCount: 10,
+    symbolsPerLetterMax: 2,
+    hints: false,
+    frequencyAnalysis: false,
+    clearTextLine: false,
+    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 ou 2 symboles).',
+  },
+  '2.3': {
+    version: '2.3',
+    clearTextLength: 400,
+    symbolsPerLine: 27,
+    symbolsCountToUse: 50,
+    extractedWordsCount: 7,
+    symbolsPerLetterMax: 3,
+    hints: false,
+    frequencyAnalysis: false,
+    clearTextLine: false,
+    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
+  },
+};
+
+/**
  * Default constants
  */
 
@@ -156,79 +223,9 @@ function extractWords (text, wordsCount, rng0) {
   return clearWords;
 }
 
-const versions = {
-  // For test only
-  '0.1': {
-    version: '0.1',
-    clearTextLength: 30,
-    symbolsPerLine: 27,
-    extractedWordsCount: 40,
-    symbolsPerLetterMax: 1,
-    hints: false,
-    frequencyAnalysis: false,
-    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
-  },
-
-  1: {
-    version: 1,
-    clearTextLength: 400,
-    symbolsPerLine: 27,
-    extractedWordsCount: 40,
-    symbolsPerLetterMax: 1,
-    hints: false,
-    frequencyAnalysis: false,
-    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
-  },
-
-  '2.1': {
-    version: '2.1',
-    clearTextLength: 100,
-    symbolsPerLine: 27,
-    symbolsCountToUse: 26,
-    extractedWordsCount: 100,
-    symbolsPerLetterMax: 1,
-    hints: false,
-    frequencyAnalysis: false,
-    clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (un symbole par lettre).',
-  },
-  '2.2': {
-    version: '2.2',
-    clearTextLength: 300,
-    symbolsPerLine: 27,
-    symbolsCountToUse: 35,
-    extractedWordsCount: 10,
-    symbolsPerLetterMax: 2,
-    hints: false,
-    frequencyAnalysis: false,
-    clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 ou 2 symboles).',
-  },
-  '2.3': {
-    version: '2.3',
-    clearTextLength: 400,
-    symbolsPerLine: 27,
-    symbolsCountToUse: 50,
-    extractedWordsCount: 7,
-    symbolsPerLetterMax: 3,
-    hints: false,
-    frequencyAnalysis: false,
-    clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
-  },
-};
-
-generateTaskData({
-  params: {
-    version: 1,
-  },
-  random_seed: 6,
-});
-
-// module.exports.generateTaskData =
 function generateTaskData (task) {
   const version = task.params.version || 1;
-  let {clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax} = versions[version];
+  let {clearMessage, clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax} = versions[version];
 
   const rng0 = seedrandom(task.random_seed + 16);
 
@@ -245,7 +242,13 @@ function generateTaskData (task) {
 
   const {substitution, symbols} = generateSubstitution(rng0, symbolsToUse);
 
-  const clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
+  let clearText;
+  if ('client' === process.env.GENERATE_MODE && clearMessage && clearMessage.length) {
+    clearText = clearMessage;
+  } else {
+    clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
+  }
+
   const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
 
   const cipherText = applySubstitution(clearText, substitution, rng0);

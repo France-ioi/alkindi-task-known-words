@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <!-- legacy -->
+    <script class="remove" type="text/javascript" src="bebras-modules/ext/jschannel/jschannel.js"></script>
+    <script class="remove" type="text/javascript" src="bebras-modules/integrationAPI.01/official/platform-pr.js"></script>
+    <script class="remove" type="text/javascript" src="bebras-modules/ext/jquery/2.1/jquery.min.js"></script>
+    <script class="remove" type="text/javascript" src="bebras-modules/integrationAPI.01/official/miniPlatform.js"></script>
+
+    <!-- task -->
+    <script src="vendor.js"></script>
+    <script src="index.js"></script>
+    <script src="task.js"></script>
+</head>
+<body>
+    <div id="container" class="container"></div>
+    <div id="substitution-pinned-view" style="margin-top: 200px"></div>
+    <script type="text/javascript">
+        window.stringsLanguage = 'fr';
+        window.modulesPath = 'bebras-modules';
+
+        var options = {
+            defaults: {
+                taskID: 'alkindi-task-known-words',
+                version: 1
+            },
+            server_module: {
+              mode: 'client',
+              baseUrl: 'http://localhost:3101/',
+            }
+        };
+        window.app = runReact(document.getElementById('container'), options);
+    </script>
+</body>

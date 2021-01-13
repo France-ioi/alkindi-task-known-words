@@ -1,8 +1,7 @@
-
 import update from 'immutability-helper';
-import algoreaReactTask from './algorea_react_task';
-
+import {reactTask} from '@france-ioi/react-task-lib';
 import 'bootstrap/dist/css/bootstrap.css';
+import '@france-ioi/react-task-lib/dist/index.css';
 import './style.css';
 
 // Import used Font-Awesome icons individually to allow tree-shaking reduce sensibly Webpack build size
@@ -132,5 +131,9 @@ function taskStateLoaded (state, {payload: {_dump}}) {
 }
 
 window.runReact = function (container, options) {
-  return algoreaReactTask(container, options, TaskBundle);
+  /// #if 'client' === GENERATE_MODE
+  return reactTask(container, options, TaskBundle, require('../server-modules/index.js'));
+  /// #else
+  return reactTask(container, options, TaskBundle);
+  /// #endif
 };

@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 const SRC = path.resolve(__dirname, 'src');
 const isDev = process.env.NODE_ENV !== 'production';
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -22,7 +22,10 @@ const config = module.exports = {
         test: /\.js$/,
         include: SRC,
         use: [
-          {loader: 'babel-loader', options: {babelrc: true}}
+          {loader: 'babel-loader', options: {babelrc: true}},
+          {loader: "ifdef-loader", options: {
+            GENERATE_MODE: process.env.GENERATE_MODE ? process.env.GENERATE_MODE : 'server',
+          }},
         ]
       },
       {
@@ -62,14 +65,15 @@ const config = module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env': {
-        NODE_ENV: JSON.stringify(process.env.NODE_ENV)
-      }
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+        GENERATE_MODE: JSON.stringify(process.env.GENERATE_MODE),
+      },
     }),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new CopyWebpackPlugin([
       {from: 'bebras-modules/', to: 'bebras-modules/'},
-      {from: `index${!isDev ? '.prod' : ''}.html`, to: 'index.html'}
+      {from: `index${'client' === process.env.GENERATE_MODE ? '.client' : (!isDev ? '.prod' : '')}.html`, to: 'index.html'}
     ]),
   ],
   externals: {
@@ -91,6 +95,12 @@ const config = module.exports = {
           name: "vendor",
           chunks: "all",
         },
+        task: {
+          test: /[\\/]server-modules[\\/]/,
+          name: "task",
+          chunks: "all",
+          enforce: true,
+        },
       },
     },
   },
@@ -101,6 +111,15 @@ const config = module.exports = {
 if (isDev) {
   config.devtool = 'inline-source-map';
 } else {
-  // config.optimization.minimize = false;
-  config.optimization.minimizer = [new UglifyJSPlugin()];
+  config.optimization.minimizer = [
+    new TerserPlugin({
+      terserOptions: {
+        format: {
+          comments: false,
+        },
+      },
+      extractComments: false,
+      exclude: /task/,
+    }),
+  ];
 }
