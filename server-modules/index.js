@@ -75,7 +75,7 @@ const versions = {
  */
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const symbols = "^@&~#{}[]()|-\\_°+=$£%¨*µ!§:/;.,?abcdefghijklmnopqrstuvwxyz";
+const symbols = "^@&#{}[]()|-°+=$£%¨*µ!€:/;.,?abcdefghijklmnopqrstuvwxyz";
 
 /**
  * task module export...
