@@ -3,14 +3,12 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useDrop} from "react-dnd";
 import {DraggableUsedLetter} from "./DraggableUsedLetter";
 import {range} from 'range';
-
-
+import {Form} from 'react-bootstrap';
 
 export const SubstitutionCell = ({
   staticChar,
   editableChar,
   isEditing,
-  isConflict,
   onEditingStarted,
   rank,
   editRank,
@@ -109,8 +107,16 @@ export const SubstitutionCell = ({
       {staticCell}
       {locksContainerOpen && <div className="substitution-locks-container" ref={locksContainerRef}>
         {range(0, Math.min(editableChar.length, symbolsPerLetterMax)).map((index) =>
-          <div className="substitution-lock-symbol" onClick={() => lockClicked(index)} key={'locks' + index}>
-            <FontAwesomeIcon icon={editableChar[index] && symbolsLocked[editableChar[index]] ? 'lock' : 'lock-open'} />
+          <div className="substitution-lock-symbol" key={'locks' + index}>
+            <FontAwesomeIcon icon="lock-open" className="lock-open"/>
+            <Form.Check
+              id={"switch" + index}
+              size="xs"
+              type="switch"
+              checked={!!(editableChar[index] && symbolsLocked[editableChar[index]])}
+              onChange={() => lockClicked(index)}
+            />
+            <FontAwesomeIcon icon="lock"/>
             <div className="substitution-lock-caret"/>
           </div>
         )}

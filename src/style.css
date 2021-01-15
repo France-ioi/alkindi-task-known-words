@@ -248,7 +248,7 @@
 .substitution-locks-container {
   position: absolute;
   top: 22px;
-  left: -23px;
+  right: 21px;
 }
 .substitution-lock-symbol {
   margin-top: 1px;
@@ -256,15 +256,22 @@
   font-size: 13px;
   cursor: pointer;
   height: 21px;
-  background: #88BB88;
+  background: #30242B;
+  color: #fff;
   border-radius: 2px;
   padding: 0 4px;
   position: relative;
   z-index: 1;
-  width: 21px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.substitution-lock-symbol .lock-open {
+  margin-right: 5px;
+}
+.custom-control-input:checked ~ .custom-control-label::before {
+  background-color: #88BB88;
+  border-color: #88BB88;
 }
 .substitution-lock-caret {
   content: '';
@@ -272,9 +279,9 @@
   height: 0;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 10px solid #88BB88;
+  border-left: 10px solid #30242B;
   position: absolute;
-  left: 18px;
+  right: -5px;
   top: 6px;
   z-index: -1;
 }
