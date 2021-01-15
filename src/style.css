@@ -499,3 +499,7 @@
   justify-content: center;
   background: #fff;
 }
+.draggable-word.is-selected .draggable-word-letter {
+  background-color: #88BB88;
+  color: #fff;
+}

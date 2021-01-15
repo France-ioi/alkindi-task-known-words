@@ -9,7 +9,7 @@ function getStyles (isDragging) {
   };
 }
 
-export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, innerRef}) => {
+export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, innerRef, onWordSelected, selected}) => {
   const ref = innerRef ? innerRef : useRef(null);
 
   const [{isDragging}, drag, preview] = useDrag({
@@ -71,10 +71,15 @@ export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStar
   drag(ref);
 
   return (
-    <div ref={ref} className={`draggable-word letter-cell ${minimal ? 'is-minimal' : ''}`} style={getStyles(isDragging)}>
+    <div
+      ref={ref}
+      className={`draggable-word letter-cell ${minimal ? 'is-minimal' : ''} ${selected ? 'is-selected' : ''}`}
+      style={getStyles(isDragging)}
+      onClick={() => onWordSelected(wordIndex)}
+    >
       {!minimal &&
         <div className="draggable-word-handle">
-          <svg x="0px" y="0px" width="10px" height="20px" viewBox="0 0 20 40" version="1.1" xmlns="http://www.w3.org/2000/svg">>
+          <svg x="0px" y="0px" width="10px" height="20px" viewBox="0 0 20 40" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <circle fill="#EEEEEE" opacity="0.7" cx="10" cy="12" r="3"></circle>
             <circle fill="#EEEEEE" opacity="0.7" cx="10" cy="20" r="3"></circle>
             <circle fill="#EEEEEE" opacity="0.7" cx="10" cy="28" r="3"></circle>

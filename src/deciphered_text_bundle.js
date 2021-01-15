@@ -7,7 +7,6 @@ import DecipheredTextCell from "./components/DecipheredTextCell";
 import {put, select, takeEvery} from "redux-saga/effects";
 import {DraggableWord} from "./components/DraggableWord";
 import {DroppableWordSlot} from "./components/DroppableWordSlot";
-import {CustomDragLayer} from "./components/CustomDragLayer";
 import {Collapsable} from '@france-ioi/react-task-lib';
 
 const cellWidth = 22; // px
@@ -23,6 +22,7 @@ function appInitReducer (state, _action) {
       substitutionCells: null,
       decipheredLetters: {},
       placedWords: {},
+      selectedWord: null,
     },
   };
 }
@@ -215,6 +215,16 @@ function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, posi
   return applyRefreshedData(newState);
 }
 
+function decipheredWordSelectedReducer (state, {payload: {wordIndex}}) {
+  const {decipheredText: {selectedWord}} = state;
+
+  if (selectedWord === wordIndex) {
+    return update(state, {decipheredText: {selectedWord: {$set: null}}});
+  }
+
+  return update(state, {decipheredText: {selectedWord: {$set: wordIndex}}});
+}
+
 function decipheredCellEditMovedReducer (state, {payload: {rowIndex, position, cellMove}}) {
   let {decipheredText: {lines}, taskData: {cipherTextLines}} = state;
   const cellStop = {rowIndex, position};
@@ -270,16 +280,18 @@ function DecipheredTextViewSelector (state) {
     decipheredCellEditMoved,
     schedulingJump,
     decipheredWordMoved,
+    decipheredWordSelected,
   } = actions;
-  const {width, scrollTop, lines, pageColumns, placedWords} = decipheredText;
+  const {width, scrollTop, lines, pageColumns, placedWords, selectedWord} = decipheredText;
 
   return {
     decipheredCellEditStarted, decipheredCellEditCancelled, decipheredCellCharChanged,
     decipheredCellEditMoved,
     decipheredWordMoved,
+    decipheredWordSelected,
     version,
     decipheredTextResized, decipheredTextScrolled, schedulingJump,
-    editingDecipher, width, scrollTop, lines, pageColumns, clearWords, placedWords
+    editingDecipher, width, scrollTop, lines, pageColumns, clearWords, placedWords, selectedWord,
   };
 }
 
@@ -289,7 +301,7 @@ class DecipheredTextView extends React.PureComponent {
     this.state = {dragElement: null};
   }
   render () {
-    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords} = this.props;
+    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords, selectedWord} = this.props;
     const rowsCount = lines.length;
     const linesHeight = [];
 
@@ -400,7 +412,7 @@ class DecipheredTextView extends React.PureComponent {
                                 position={position}
                                 occupied={lines[rowIndex].words[position] ? lines[rowIndex].words : null}
                                 letters={letters}
-                                draggingWord={this.state.dragElement}
+                                draggingWord={this.state.dragElement || clearWords[selectedWord]}
                               />
                             </div>
                           )}
@@ -493,6 +505,8 @@ class DecipheredTextView extends React.PureComponent {
                         wordIndex={column * Math.round(clearWords.length / 2) + wordIndex}
                         wordSlotsByRow={wordSlotsByRow}
                         word={word}
+                        selected={(column * Math.round(clearWords.length / 2) + wordIndex) === selectedWord}
+                        onWordSelected={this.onWordSelected}
                         onWordMoved={this.onWordMoved}
                         onDragStart={(item) => this.setDragElement(item)}
                         onDragEnd={() => this.setDragElement(null)}
@@ -541,6 +555,9 @@ class DecipheredTextView extends React.PureComponent {
   onWordMoved = (wordIndex, rowIndex, position) => {
     this.props.dispatch({type: this.props.decipheredWordMoved, payload: {wordIndex, rowIndex, position}});
   };
+  onWordSelected = (wordIndex) => {
+    this.props.dispatch({type: this.props.decipheredWordSelected, payload: {wordIndex}});
+  };
 }
 
 export default {
@@ -552,6 +569,7 @@ export default {
     decipheredCellCharChanged: 'DecipheredText.Cell.Char.Changed',
     decipheredCellEditMoved: 'DecipheredText.Cell.Edit.Moved',
     decipheredWordMoved: 'DecipheredText.Word.Moved',
+    decipheredWordSelected: 'DecipheredText.Word.Selected',
   },
   actionReducers: {
     appInit: appInitReducer,
@@ -564,6 +582,7 @@ export default {
     decipheredCellCharChanged: decipheredCellCharChangedReducer,
     decipheredCellEditMoved: decipheredCellEditMovedReducer,
     decipheredWordMoved: decipheredWordMovedReducer,
+    decipheredWordSelected: decipheredWordSelectedReducer,
   },
   lateReducer: decipheredTextLateReducer,
   saga: function* () {
