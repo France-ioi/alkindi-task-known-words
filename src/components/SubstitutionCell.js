@@ -43,12 +43,12 @@ export const SubstitutionCell = ({
   const cellChanged = (value, position) => {
     onChangeChar(rank, position, value);
   };
-  const lockClicked = (index) => {
+  const lockClicked = (index, newValue) => {
     if (!editableChar[index]) {
       return;
     }
 
-    onChangeLocked(editableChar[index], !(editableChar[index] && symbolsLocked[editableChar[index]]));
+    onChangeLocked(editableChar[index], newValue);
   };
 
   const toggleLockContainer = (e) => {
@@ -107,14 +107,14 @@ export const SubstitutionCell = ({
       {staticCell}
       {locksContainerOpen && <div className="substitution-locks-container" ref={locksContainerRef}>
         {range(0, Math.min(editableChar.length, symbolsPerLetterMax)).map((index) =>
-          <div className="substitution-lock-symbol" key={'locks' + index}>
+          <div className="substitution-lock-symbol" key={'locks' + index} onClick={() => lockClicked(index, !(editableChar[index] && symbolsLocked[editableChar[index]]))}>
             <FontAwesomeIcon icon="lock-open" className="lock-open"/>
             <Form.Check
               id={"switch" + index}
               size="xs"
               type="switch"
               checked={!!(editableChar[index] && symbolsLocked[editableChar[index]])}
-              onChange={() => lockClicked(index)}
+              onChange={() => lockClicked(index, (editableChar[index] && symbolsLocked[editableChar[index]]))}
             />
             <FontAwesomeIcon icon="lock"/>
             <div className="substitution-lock-caret"/>
