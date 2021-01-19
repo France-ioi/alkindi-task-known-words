@@ -34,6 +34,7 @@ const versions = {
   '2.1': {
     version: '2.1',
     clearMessage: "J AI COURS D AIKIDO CETTE SEMAINE AVEC LE PROFESSEUR QUI A DES CHEVEUX ROSES",
+    clearMessageWords: ["J", "AI", "COURS", "D", "AIKIDO", "CETTE", "SEMAINE", "AVEC", "LE", "PROFESSEUR", "QUI", "A", "DES", "CHEVEUX", "ROSES"],
     clearTextLength: 100,
     symbolsPerLine: 27,
     symbolsCountToUse: 26,
@@ -217,15 +218,12 @@ function extractWords (text, wordsCount, rng0) {
   const words = text.split(' ');
   const shuffledWords = shuffle({random: rng0, deck: words}).cards;
 
-  const clearWords = shuffledWords.slice(0, wordsCount);
-  clearWords.sort();
-
-  return clearWords;
+  return shuffledWords.slice(0, wordsCount);
 }
 
 function generateTaskData (task) {
   const version = task.params.version || 1;
-  let {clearMessage, clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax} = versions[version];
+  let {clearMessage, clearMessageWords, clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax} = versions[version];
 
   const rng0 = seedrandom(task.random_seed + 16);
 
@@ -254,7 +252,8 @@ function generateTaskData (task) {
   const cipherText = applySubstitution(clearText, substitution, rng0);
   const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
 
-  const clearWords = extractWords(clearText, extractedWordsCount, rng0);
+  const clearWords = 'client' === process.env.GENERATE_MODE && clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
+  clearWords.sort();
 
   const hintsRequested = getHintsRequested(task.hints_requested);
 
