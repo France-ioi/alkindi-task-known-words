@@ -19,10 +19,6 @@ function appInitReducer (state, _action) {
     ...state,
     decipheredText: {
       scrollTop: 0,
-      substitutionCells: null,
-      decipheredLetters: {},
-      placedWords: {},
-      selectedWord: null,
     },
   };
 }
@@ -33,7 +29,15 @@ function taskInitReducer (state) {
     return state;
   }
 
-  return applyRefreshedData({...state});
+  decipheredText = {
+    ...decipheredText,
+    substitutionCells: null,
+    decipheredLetters: {},
+    placedWords: {},
+    selectedWord: null,
+  };
+
+  return applyRefreshedData({...state, decipheredText, editingDecipher: null});
 }
 
 function taskRefreshReducer (state) {
@@ -58,7 +62,7 @@ function decipheredTextScrolledReducer (state, {payload: {scrollTop}}) {
 }
 
 function decipheredTextLateReducer (state, _action) {
-  if (!state.taskData) return state;
+  if (!state.taskData || !state.decipheredText.decipheredLetters) return state;
   let {decipheredText} = state;
 
   return applyRefreshedData({...state, decipheredText});

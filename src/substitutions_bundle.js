@@ -5,21 +5,18 @@ import {put, select, takeEvery} from 'redux-saga/effects';
 import SubstitutionEditView from './components/SubstitutionEditView';
 import {wrapAround, markSubstitutionConflicts, loadSubstitution, memoize} from './utils';
 
-function appInitReducer (state, _action) {
-  return {
-    ...state,
-    substitution: null,
-    pinnedSubstitution: false,
-    editingSubstitution: {},
-    symbolsLocked: {},
-  };
-}
-
 function taskInitReducer (state, _action) {
   const {taskData: {alphabet}} = state;
   const substitution = loadSubstitution(alphabet);
 
-  return {...state, substitution, taskReady: true};
+  return {
+    ...state,
+    substitution,
+    pinnedSubstitution: false,
+    editingSubstitution: {},
+    symbolsLocked: {},
+    taskReady: true,
+  };
 }
 
 function substitutionCellEditStartedReducer (state, {payload: {cellRank, pinned}}) {
@@ -185,7 +182,6 @@ export default {
     substitutionPinned: 'Substitution.Pinned',
   },
   actionReducers: {
-    appInit: appInitReducer,
     taskInit: taskInitReducer,
     substitutionCellEditStarted: substitutionCellEditStartedReducer,
     substitutionCellEditCancelled: substitutionCellEditCancelledReducer,
