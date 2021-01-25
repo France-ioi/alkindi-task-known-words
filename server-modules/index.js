@@ -4,6 +4,13 @@ var {shuffle} = require("shuffle");
 var {range} = require("range");
 
 /**
+ * Default constants
+ */
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const symbols = "^@&#{}[]()|-°+=$£%¨*µ!€:/;.,?abcdefghijklmnopqrstuvwxyz";
+
+/**
  * Versions configuration
  */
 
@@ -33,12 +40,14 @@ const versions = {
 
   '2.1': {
     version: '2.1',
-    clearMessage: "J AI COURS D AIKIDO CETTE SEMAINE AVEC LE PROFESSEUR QUI A DES CHEVEUX ROSES",
-    clearMessageWords: ["J", "AI", "COURS", "D", "AIKIDO", "CETTE", "SEMAINE", "AVEC", "LE", "PROFESSEUR", "QUI", "A", "DES", "CHEVEUX", "ROSES"],
-    clearTextLength: 100,
+    //clearMessage: "J AI COURS D AIKIDO CETTE SEMAINE AVEC LE PROFESSEUR QUI A DES CHEVEUX ROSES",
+    //clearMessageWords: ["J", "AI", "COURS", "D", "AIKIDO", "CETTE", "SEMAINE", "AVEC", "LE", "PROFESSEUR", "QUI", "A", "DES", "CHEVEUX", "ROSES"],
+    // Proposition Mélissa:
+    clearMessage: "VEUILLEZ CONTACTER SECRETEMENT NOS PARTENAIRES AMERICAINS AU SUJET DE LA MISSION",
+    clearMessageWords: ["VEUILLEZ", "CONTACTER", "SECRETEMENT", "NOS", "PARTENAIRES", "AMERICAINS",  "SUJET",  "MISSION"],
     symbolsPerLine: 27,
-    symbolsCountToUse: 26,
-    extractedWordsCount: 100,
+    substitution: [['^'], ['@'], ['&'], ['#'], ['{'], ['}'], ['['], [']'], ['('], [')'], ['|'], ['-'], ['°'], ['+'], ['='], ['$'], ['£'], ['%'], ['¨'], ['*'], ['µ'], ['!'], ['€'], [':'], ['/'], [';']],
+    symbols: symbols.slice(0, 26),
     symbolsPerLetterMax: 1,
     hints: false,
     frequencyAnalysis: false,
@@ -47,36 +56,38 @@ const versions = {
   },
   '2.2': {
     version: '2.2',
-    clearTextLength: 300,
+    // clearMessage: "TOUS LES LANGAGES ONT UNE ECRITURE OU LES SYMBOLES DE L ALPHABET POUR CHAQUE SON SYLLABE OU MOT PAR EXEMPLE EN ESPAGNOL CHAQUE SON EST UN SYMBOLE EN JAPONAIS KANAS ALORS QUE L ECRITURE CHINOISE EST SEMANTIQUE",
+    // clearMessageWords: [ "ESPAGNOL", "ECRITURE", "SYMBOLES", "LANGAGES", "JAPONAIS", "CHINOISE", "ALPHABET", "KANAS"],
+    // Proposition Mélissa:
+    clearMessage: "NE GOUTEZ NI NE BUVEZ RIEN DE CE QUI VOUS SERA PROPOSE AU BANQUET LES ENNEMIS Y ONT AJOUTE DE L ARSENIC VOUS TROUVEREZ VOTRE CONTACT PRES DU STAND DES COCKTAILS IL VOUS INVITERA A L EXTERIEUR",
+    clearMessageWords: ["ENNEMIS", "TROUVEREZ", "CONTACT", "BANQUET", "RIEN", "GOUTEZ"],
     symbolsPerLine: 27,
-    symbolsCountToUse: 35,
-    extractedWordsCount: 10,
+    substitution: [['^', '.'], ['@'], ['&'], ['#'], ['{'], ['}'], ['['], [']'], ['('], [')'], ['|'], ['-'], ['°'], ['+'], ['='], ['$'], ['£'], ['%'], ['¨'], ['*'], ['µ'], ['!'], ['€'], [':'], ['/'], [';']],
+    symbols: symbols.slice(0, 30),
     symbolsPerLetterMax: 2,
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 ou 2 symboles).',
+    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (un à deux symboles par lettre).',
   },
+
+
   '2.3': {
     version: '2.3',
-    clearTextLength: 400,
+    // clearMessage: "J AI COURS D AIKIDO CETTE SEMAINE AVEC LE PROFESSEUR QUI A DES CHEVEUX ROSES",
+    // Proposition Mélissa:
+    clearMessage: "LE CONTENU DE VOTRE PROCHAINE MISSION SE TROUVE SOUS LA STATUE A L ENTREE DU MUSEE DES SCIENCES IL FAUT Y ALLER DE NUIT POUR NE PAS SE FAIRE REPERER",
+    clearMessageWords: ["MUSEE", "ALLER", "VOTRE", "STATUE"],
     symbolsPerLine: 27,
-    symbolsCountToUse: 50,
-    extractedWordsCount: 7,
+    substitution: [['^', '.'], ['@'], ['&'], ['#'], ['{'], ['}'], ['['], [']'], ['('], [')'], ['|'], ['-'], ['°'], ['+'], ['='], ['$'], ['£'], ['%'], ['¨'], ['*'], ['µ'], ['!'], ['€'], [':'], ['/'], [';']],
+    symbols: symbols.slice(0, 50),
     symbolsPerLetterMax: 3,
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
-    explanation: 'Dans ce sujet, la substitution est mono-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
+    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
   },
 };
-
-/**
- * Default constants
- */
-
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const symbols = "^@&#{}[]()|-°+=$£%¨*µ!€:/;.,?abcdefghijklmnopqrstuvwxyz";
 
 /**
  * task module export...
@@ -223,7 +234,7 @@ function extractWords (text, wordsCount, rng0) {
 
 function generateTaskData (task) {
   const version = task.params.version || 1;
-  let {clearMessage, clearMessageWords, clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax} = versions[version];
+  let {clearMessage, clearMessageWords, clearTextLength, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax, substitution: versionSubstitution, symbols: versionSymbols} = versions[version];
 
   const rng0 = seedrandom(task.random_seed + 16);
 
@@ -238,7 +249,17 @@ function generateTaskData (task) {
     }
   }
 
-  const {substitution, symbols} = generateSubstitution(rng0, symbolsToUse);
+
+  let substitution, symbols;
+  console.log('ici', versionSubstitution, versionSymbols);
+  if (versionSubstitution && versionSymbols) {
+    substitution = versionSubstitution;
+    symbols = versionSymbols;
+  } else {
+    let substitutionResult = generateSubstitution(rng0, symbolsToUse);
+    substitution = substitutionResult.substitution;
+    symbols = substitutionResult.symbols;
+  }
 
   let clearText;
   if ('client' === process.env.GENERATE_MODE && clearMessage && clearMessage.length) {
