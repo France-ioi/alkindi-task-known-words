@@ -251,7 +251,6 @@ function generateTaskData (task) {
 
 
   let substitution, symbols;
-  console.log('ici', versionSubstitution, versionSymbols);
   if (versionSubstitution && versionSymbols) {
     substitution = versionSubstitution;
     symbols = versionSymbols;
