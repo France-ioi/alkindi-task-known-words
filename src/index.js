@@ -90,7 +90,7 @@ function getTaskAnswer (state) {
   const {lines, decipheredLetters, placedWords} = decipheredText;
 
   const answer = lines.map(({deciphered}) => {
-    return deciphered.map(cell => cell.hint || cell.value || cell.result || cell.word || ' ').join('');
+    return deciphered.map(cell => cell.hint || cell.value || cell.result || ' ').join('');
   });
 
   const answerState = {
