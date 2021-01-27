@@ -258,7 +258,7 @@ function generateTaskData (task) {
   }
 
   let clearText;
-  if ('client' === process.env.GENERATE_MODE && clearMessage && clearMessage.length) {
+  if (clearMessage && clearMessage.length) {
     clearText = clearMessage;
   } else {
     clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
@@ -269,7 +269,7 @@ function generateTaskData (task) {
   const cipherText = applySubstitution(clearText, substitution, rng0);
   const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
 
-  const clearWords = 'client' === process.env.GENERATE_MODE && clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
+  const clearWords = clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
   clearWords.sort();
 
   const hintsRequested = getHintsRequested(task.hints_requested);
