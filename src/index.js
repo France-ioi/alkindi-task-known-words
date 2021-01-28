@@ -130,7 +130,8 @@ function taskStateLoaded (state, {payload: {_dump}}) {
 
 window.runReact = function (container, options) {
   /// #if 'client' === GENERATE_MODE
-  return reactTask(container, options, TaskBundle, require('../server-modules/index.js'), {easy: '2.1', medium: '2.2', hard: '2.3'});
+  const versions = {easy: {version: '2.1'}, medium: {version: '2.2'}, hard: {version: '2.3', locked: true}};
+  return reactTask(container, options, TaskBundle, require('../server-modules/index.js'), versions);
   /// #else
   return reactTask(container, options, TaskBundle);
   /// #endif
