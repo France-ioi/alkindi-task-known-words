@@ -101,6 +101,14 @@ const config = module.exports = {
           chunks: "all",
           enforce: true,
         },
+        ...(process.env.GENERATE_MODE === 'client' && {
+          tutorial: {
+            test: /[\\/]src[\\/]components[\\/]Tutorial/,
+            name: "tutorial",
+            chunks: "all",
+            enforce: true,
+          }
+        }),
       },
     },
   },

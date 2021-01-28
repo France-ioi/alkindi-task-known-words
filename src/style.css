@@ -513,3 +513,7 @@
   background-color: #88BB88;
   color: #fff;
 }
+
+.custom-scrollable {
+  border: none;
+}

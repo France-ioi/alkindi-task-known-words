@@ -8,6 +8,7 @@ import {put, select, takeEvery} from "redux-saga/effects";
 import {DraggableWord} from "./components/DraggableWord";
 import {DroppableWordSlot} from "./components/DroppableWordSlot";
 import {Collapsable} from '@france-ioi/react-task-lib';
+import Tutorial from "./components/Tutorial";
 
 const cellWidth = 22; // px
 const cellHeight = 24; // px
@@ -370,8 +371,16 @@ class DecipheredTextView extends React.PureComponent {
     return (
       <div>
         <div className="main-block">
-          <Collapsable title={<div className="main-block-header">{"Déchiffrement"}</div>}>
-            <div>
+          <Collapsable
+            title={<div className="main-block-header">{"Déchiffrement"}</div>}
+            tutorial={
+              <Tutorial
+                category="deciphered"
+                version={this.props.version}
+              />
+            }
+          >
+            <div style={{paddingTop: '20px'}}>
               <div
                 ref={this.refTextBox}
                 onScroll={this.onScroll}
@@ -508,7 +517,15 @@ class DecipheredTextView extends React.PureComponent {
           </Collapsable>
         </div>
         <div className="main-block">
-          <Collapsable title={<div className="main-block-header">{"Mots du clair"}</div>}>
+          <Collapsable
+            title={<div className="main-block-header">{"Mots du clair"}</div>}
+            tutorial={
+              <Tutorial
+                category="words"
+                version={this.props.version}
+              />
+            }
+          >
             <div
               className="custom-scrollable words-container"
             >

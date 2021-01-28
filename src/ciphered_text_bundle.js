@@ -68,7 +68,7 @@ class CipherTextView extends React.PureComponent {
     const visibleRows = range(firstRow, lastRow);
 
     return (
-      <div>
+      <div style={{paddingTop: '20px'}}>
         <div
           ref={this.refTextBox}
           onScroll={this.onScroll}
