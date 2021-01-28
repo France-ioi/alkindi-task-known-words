@@ -2,14 +2,18 @@ import update from 'immutability-helper';
 
 export function loadSubstitution (alphabet, initialValues) {
   const cells = new Array(alphabet.length).fill(-1);
-  const $cells = [];
-  cells.forEach((cell, cellIndex) => {
-    $cells[cellIndex] = {
-      rank: cellIndex,
-      editable: initialValues && initialValues[cellIndex] ? initialValues[cellIndex] : [],
-      conflict: false,
-    };
-  });
+  let $cells = [];
+  if (initialValues) {
+    $cells = initialValues;
+  } else {
+    cells.forEach((cell, cellIndex) => {
+      $cells[cellIndex] = initialValues ? initialValues : {
+        rank: cellIndex,
+        editable: [],
+        conflict: false,
+      };
+    });
+  }
 
   let substitution = $cells;
   substitution = markSubstitutionConflicts(substitution);
@@ -71,7 +75,6 @@ export function wrapAroundLines (currentPosition, cellMove, lines) {
 
 export function applySubstitutionToText (substitution, currentCipherText, alphabet, symbolsLocked) {
   let symbolValue = {};
-
   if (null !== substitution) {
     let i = 0;
     for (let cell of substitution) {

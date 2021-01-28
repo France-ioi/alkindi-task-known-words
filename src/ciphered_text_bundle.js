@@ -25,10 +25,6 @@ function taskInitReducer (state) {
   return {...state, cipheredText};
 }
 
-function taskRefreshReducer (state) {
-  return taskInitReducer(state);
-}
-
 function cipheredTextResizedReducer (state, {payload: {width}}) {
   let {cipheredText} = state;
   cipheredText = {...cipheredText, width};
@@ -133,7 +129,6 @@ export default {
   actionReducers: {
     appInit: appInitReducer,
     taskInit: taskInitReducer,
-    taskRefresh: taskRefreshReducer,
     cipheredTextResized: cipheredTextResizedReducer,
     cipheredTextScrolled: cipheredTextScrolledReducer,
   },

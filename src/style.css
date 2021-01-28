@@ -121,6 +121,9 @@
   border-radius: 2px;
   display: flex;
 }
+.droppable-word-slot-hover {
+  background-color: #88BB88 !important;
+}
 .droppable-word-slot .droppable-word-letter {
   width: 20px;
   height: 20px;

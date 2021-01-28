@@ -19,6 +19,14 @@ function taskInitReducer (state, _action) {
   };
 }
 
+function taskRefreshReducer (state) {
+  return {
+    ...state,
+    editingSubstitution: {},
+    pinnedSubstitution: false,
+  };
+}
+
 function substitutionCellEditStartedReducer (state, {payload: {cellRank, pinned}}) {
   const {taskData: {alphabet}} = state;
   cellRank = wrapAround(cellRank, alphabet.length);
@@ -183,6 +191,7 @@ export default {
   },
   actionReducers: {
     taskInit: taskInitReducer,
+    taskRefresh: taskRefreshReducer,
     substitutionCellEditStarted: substitutionCellEditStartedReducer,
     substitutionCellEditCancelled: substitutionCellEditCancelledReducer,
     substitutionCellLockChanged: substitutionCellLockChangedReducer,

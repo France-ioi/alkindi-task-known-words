@@ -31,17 +31,28 @@ function taskInitReducer (state) {
 
   decipheredText = {
     ...decipheredText,
-    substitutionCells: null,
     decipheredLetters: {},
     placedWords: {},
     selectedWord: null,
   };
 
-  return applyRefreshedData({...state, decipheredText, editingDecipher: null});
+  let newState = {...state, decipheredText, editingDecipher: null};
+  newState = decipheredTextResizedReducer(newState, {payload: {width: newState.decipheredText.width}});
+
+  return applyRefreshedData(newState);
 }
 
 function taskRefreshReducer (state) {
-  return taskInitReducer(state);
+  const newState = decipheredTextResizedReducer(state, {payload: {width: state.decipheredText.width}});
+
+  return applyRefreshedData({
+    ...newState,
+    decipheredText: {
+      ...newState.decipheredText,
+      selectedWord: null,
+    },
+    editingDecipher: null,
+  });
 }
 
 function decipheredTextResizedReducer (state, {payload: {width}}) {
@@ -187,7 +198,7 @@ function decipheredCellEditCancelledReducer (state, _action) {
 }
 
 function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, position}}) {
-  const {decipheredText: {lines, placedWords}, taskData: {clearWords, cipherTextLines}} = state;
+  const {decipheredText: {lines, placedWords, selectedWord}, taskData: {clearWords, cipherTextLines}} = state;
   const newWord = clearWords[wordIndex];
   let alreadyWordIndex = null;
 
@@ -215,6 +226,9 @@ function decipheredWordMovedReducer (state, {payload: {wordIndex, rowIndex, posi
   }
 
   newState = update(newState, {decipheredText: {placedWords: {[wordIndex]: {$set: {rowIndex, position}}}}});
+  if (selectedWord === wordIndex) {
+    newState = update(newState, {decipheredText: {selectedWord: {$set: null}}});
+  }
 
   return applyRefreshedData(newState);
 }

@@ -86,7 +86,7 @@ function taskRefreshReducer (state, _action) {
 }
 
 function getTaskAnswer (state) {
-  const {decipheredText, substitution} = state;
+  const {decipheredText, substitution, symbolsLocked} = state;
   const {lines, decipheredLetters, placedWords} = decipheredText;
 
   const answer = lines.map(({deciphered}) => {
@@ -94,9 +94,10 @@ function getTaskAnswer (state) {
   });
 
   const answerState = {
-    substitution: substitution.map(cell => cell.editable),
+    substitution: substitution,
     decipheredLetters,
     placedWords,
+    symbolsLocked,
   };
 
   return {
@@ -107,18 +108,15 @@ function getTaskAnswer (state) {
 
 function taskAnswerLoaded (state, {payload: {answer}}) {
   const {alphabet} = state.taskData;
-  const {substitutions: subs, decipheredLetters, placedWords} = answer;
-
-  const substitutions = subs.map(substitution => {
-    return loadSubstitution(alphabet, substitution);
-  });
+  const {substitution: sub, decipheredLetters, placedWords, symbolsLocked} = answer;
 
   return update(state, {
-    substitutions: {$set: substitutions},
+    substitution: {$set: loadSubstitution(alphabet, sub)},
     decipheredText: {
       decipheredLetters: {$set: decipheredLetters},
       placedWords: {$set: placedWords},
-    }
+      symbolsLocked: {$set: symbolsLocked},
+    },
   });
 }
 
@@ -132,7 +130,7 @@ function taskStateLoaded (state, {payload: {_dump}}) {
 
 window.runReact = function (container, options) {
   /// #if 'client' === GENERATE_MODE
-  return reactTask(container, options, TaskBundle, require('../server-modules/index.js'));
+  return reactTask(container, options, TaskBundle, require('../server-modules/index.js'), {easy: '2.1', medium: '2.2', hard: '2.3'});
   /// #else
   return reactTask(container, options, TaskBundle);
   /// #endif

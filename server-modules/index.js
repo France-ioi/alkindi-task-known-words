@@ -131,17 +131,27 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
   } = JSON.parse(args.answer.value);
 
   let correctLines = 0;
-  let incorrectLine = null;
-
+  let hasIncorrectLines = false;
   for (let i = 0; i < clearTextLines.length; i++) {
     const line = clearTextLines[i];
-    if (line === answerText[i]) {
+    let incorrect = false;
+    let missing = false;
+    for (let k = 0; k < line.length; k++) {
+      if (answerText[i].substring(k, k+1).trim().length ) {
+        if (line.substring(k, k+1) !== answerText[i].substring(k, k+1)) {
+          incorrect = true;
+        }
+      } else if (line.substring(k, k+1).trim().length) {
+        missing = true;
+      }
+    }
+
+    if (!missing && !incorrect) {
       correctLines++;
-    } else if (null === incorrectLine) {
-      incorrectLine = [
-        line,
-        answerText[i],
-      ];
+    } else {
+      if (incorrect) {
+        hasIncorrectLines = true;
+      }
     }
   }
 
@@ -160,8 +170,11 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
       et de ${hints2Count} ligne${hints2Count > 1 ? "s" : ""} en indice, ce qui vous a coûté ${hintsCost} points.` : ''}`;
   } else {
     score = 0;
-    message =
-      `Il y a ${clearTextLines.length - correctLines} ${clearTextLines.length - correctLines > 1 ? 'lignes différentes' : 'ligne différente'} entre votre texte déchiffré et le texte d'origine.`;
+    if (hasIncorrectLines) {
+      message = `Votre réponse contient au moins une erreur, c'est-à-dire au moins une lettre qui est différente entre votre texte déchiffré et le texte d'origine.`;
+    } else {
+      message = `Il manque au moins une lettre dans votre réponse.`;
+    }
   }
 
   callback(null, {score, message});
@@ -250,7 +263,8 @@ function generateTaskData (task) {
   let substitution, symbols;
   if (versionSubstitution) {
     substitution = versionSubstitution;
-    symbols = versionSubstitution.reduce((cur, next) => [...cur, ...next], []).join('');
+    symbols = versionSubstitution.reduce((cur, next) => [...cur, ...next], []);
+    symbols = shuffle({random: rng0, deck: symbols}).cards.join('');
   } else {
     let substitutionResult = generateSubstitution(rng0, symbolsToUse);
     substitution = substitutionResult.substitution;
