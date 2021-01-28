@@ -60,8 +60,8 @@ const versions = {
     // clearMessage: "TOUS LES LANGAGES ONT UNE ECRITURE OU LES SYMBOLES DE L ALPHABET POUR CHAQUE SON SYLLABE OU MOT PAR EXEMPLE EN ESPAGNOL CHAQUE SON EST UN SYMBOLE EN JAPONAIS KANAS ALORS QUE L ECRITURE CHINOISE EST SEMANTIQUE",
     // clearMessageWords: [ "ESPAGNOL", "ECRITURE", "SYMBOLES", "LANGAGES", "JAPONAIS", "CHINOISE", "ALPHABET", "KANAS"],
     // Proposition Mélissa:
-    clearMessage: "NE GOUTEZ NI NE BUVEZ RIEN DE CE QUI VOUS SERA PROPOSE AU BANQUET LES ENNEMIS ONT AJOUTE DE L ARSENIC VOUS TROUVEREZ VOTRE CONTACT PRES DU STAND DES COCKTAILS IL VOUS INVITERA A L EXTERIEUR",
-    clearMessageWords: ["ENNEMIS", "TROUVEREZ", "CONTACT", "BANQUET", "RIEN", "GOUTEZ"],
+    clearMessage: "NE GOUTEZ RIEN DE CE QUI VOUS SERA PROPOSE AU BANQUET LES ENNEMIS ONT AJOUTE DU POISON VOUS TROUVEREZ VOTRE CONTACT A L EXTERIEUR",
+    clearMessageWords: ["ENNEMIS", "TROUVEREZ", "CONTACT", "BANQUET", "AJOUTE", "GOUTEZ"],
     symbolsPerLine: 27,
     substitution: [['^', '.'], ['@'], ['&'], ['#'], ['{','j'], ['}'], ['['], [']'], ['('], [')'], ['|'], ['-'], ['°'], ['+','a'], ['='], ['$'], ['£'], ['%','4'], ['¨'], ['*'], ['µ'], ['!'], ['€'], [':'], ['/'], [';']],
     symbolsPerLetterMax: 2,
@@ -72,7 +72,7 @@ const versions = {
   },
   '2.3': {
     version: '2.3',
-    randomSeed: 1,
+    randomSeed: 22,
     // clearMessage: "J AI COURS D AIKIDO CETTE SEMAINE AVEC LE PROFESSEUR QUI A DES CHEVEUX ROSES",
     // Proposition Mélissa:
     clearMessage: "LE CONTENU DE VOTRE PROCHAINE MISSION SE TROUVE DERRIERE LA PORTE A L ENTREE DU MUSEE DES BEAUX ARTS IL FAUT Y ALLER DE NUIT POUR NE PAS SE FAIRE REPERER",
