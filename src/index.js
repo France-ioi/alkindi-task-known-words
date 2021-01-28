@@ -115,8 +115,8 @@ function taskAnswerLoaded (state, {payload: {answer}}) {
     decipheredText: {
       decipheredLetters: {$set: decipheredLetters},
       placedWords: {$set: placedWords},
-      symbolsLocked: {$set: symbolsLocked},
     },
+    symbolsLocked: {$set: symbolsLocked},
   });
 }
 

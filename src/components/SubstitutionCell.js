@@ -58,7 +58,12 @@ export const SubstitutionCell = ({
 
     e.preventDefault();
     e.stopPropagation();
-    setLocksContainerOpen(!locksContainerOpen);
+
+    if (symbolsPerLetterMax === 1) {
+      lockClicked(0, !symbolsLocked[editableChar[0]]);
+    } else {
+      setLocksContainerOpen(!locksContainerOpen);
+    }
   };
 
   const ref = useRef(null);
