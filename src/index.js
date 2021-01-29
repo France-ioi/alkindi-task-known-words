@@ -72,7 +72,8 @@ function appInitReducer (state, _action) {
     "browserSupport": [],
     "fullFeedback": true,
     "acceptedAnswers": [],
-    "usesRandomSeed": true
+    "usesRandomSeed": true,
+    "autoHeight": true,
   };
   return {...state, taskMetaData};
 }
