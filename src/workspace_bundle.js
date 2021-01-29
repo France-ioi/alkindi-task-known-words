@@ -5,7 +5,7 @@ import {DndProvider} from 'react-dnd';
 import HTML5toTouch from 'react-dnd-multi-backend/dist/esm/HTML5toTouch';
 import MultiBackend from 'react-dnd-multi-backend';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {CustomDragLayer} from "./components/CustomDragLayer";
+import CustomDragLayer from "./components/CustomDragLayer";
 import Tutorial from "./components/Tutorial";
 
 function WorkspaceSelector (state) {

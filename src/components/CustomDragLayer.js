@@ -1,55 +1,65 @@
 import React from 'react';
-import {useDragLayer} from 'react-dnd';
+import {DragLayer} from 'react-dnd';
 import {DraggableWord} from "./DraggableWord";
 
-const layerStyles = {
-  position: 'fixed',
-  pointerEvents: 'none',
-  zIndex: 100,
-  left: 0,
-  top: 0,
-  width: '100%',
-  height: '100%',
+let subscribedToOffsetChange = false;
+let dragPreviewRef = null;
+
+const onOffsetChange = monitor => () => {
+  if (!dragPreviewRef) return;
+
+  const offset = monitor.getSourceClientOffset();
+  if (!offset) return;
+
+  const transform = `translate(${offset.x}px, ${offset.y}px)`;
+  dragPreviewRef.style["transform"] = transform;
+  dragPreviewRef.style["-webkit-transform"] = transform;
 };
-function getItemStyles (initialOffset, currentOffset) {
-  if (!initialOffset || !currentOffset) {
-    return {
-      display: 'none',
-    };
+
+export default DragLayer(monitor => {
+  if (!subscribedToOffsetChange) {
+    monitor.subscribeToOffsetChange(onOffsetChange(monitor));
+    subscribedToOffsetChange = true;
   }
-  let {x, y} = currentOffset;
-  const transform = `translate(${x}px, ${y}px)`;
+
   return {
-    display: 'inline-block',
-    transform,
-    WebkitTransform: transform,
+    itemBeingDragged: monitor.getItem(),
+    componentType: monitor.getItemType(),
+    beingDragged: monitor.isDragging()
   };
-}
+})(
+  class CustomDragLayer extends React.PureComponent {
+    componentDidUpdate () {
+      dragPreviewRef = this.rootNode;
+    }
+    render () {
+      if (!this.props.beingDragged || this.props.componentType !== 'word') {
+        return null;
+      }
 
-export const CustomDragLayer = () => {
-  const {item, itemType, isDragging, initialOffset, currentOffset} = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    itemType: monitor.getItemType(),
-    initialOffset: monitor.getInitialSourceClientOffset(),
-    currentOffset: monitor.getSourceClientOffset(),
-    isDragging: monitor.isDragging(),
-  }));
-
-  if (!isDragging || itemType !== 'word') {
-    return null;
+      const {wordIndex, word} = this.props.itemBeingDragged;
+      return (
+        <div
+          role="presentation"
+          ref={el => (this.rootNode = el)}
+          style={{
+            position: "fixed",
+            pointerEvents: "none",
+            top: 0,
+            left: 0,
+            zIndex: 100,
+            display: 'inline-block',
+          }}
+        >
+          <div id="custom-drag-layer">
+            <DraggableWord
+              wordIndex={wordIndex}
+              word={word}
+              onWordMoved={() => {}}
+            />
+          </div>
+        </div>
+      );
+    }
   }
-
-  const {wordIndex, word} = item;
-
-  return (
-    <div style={layerStyles}>
-      <div style={getItemStyles(initialOffset, currentOffset)} id="custom-drag-layer">
-        <DraggableWord
-          wordIndex={wordIndex}
-          word={word}
-          onWordMoved={() => {}}
-        />
-      </div>
-    </div>
-  );
-};
+);

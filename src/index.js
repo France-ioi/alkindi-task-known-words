@@ -60,6 +60,8 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 function appInitReducer (state, _action) {
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
   const taskMetaData = {
     "id": "http://concours-alkindi.fr/tasks/2020/known-words",
     "language": "fr",
@@ -73,7 +75,7 @@ function appInitReducer (state, _action) {
     "fullFeedback": true,
     "acceptedAnswers": [],
     "usesRandomSeed": true,
-    "autoHeight": true,
+    "autoHeight": !isSafari,
   };
   return {...state, taskMetaData};
 }
