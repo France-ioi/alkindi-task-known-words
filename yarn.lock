@@ -1058,10 +1058,10 @@
   dependencies:
     prop-types "^15.7.2"
 
-"@france-ioi/react-task-lib@^1.3.5":
-  version "1.3.5"
-  resolved "https://npm.pkg.github.com/download/@france-ioi/react-task-lib/1.3.5/b6b2fe65c566eefe4f930466e533aa28958ab250eee2f6b832482c1e90bf633d#cf4319aa4b3dbd7f9bd14a25c4f07a0d2980d2f2"
-  integrity sha512-LyhUmzkN95jz4O4v2Mp99jn/uVrVGF2E2BRIrF1phXwIt/HU7J3tfsx1QtlQkWJ38O2ZOWD+uY25Fxr77EQ4CA==
+"@france-ioi/react-task-lib@^1.3.8":
+  version "1.3.8"
+  resolved "https://npm.pkg.github.com/download/@france-ioi/react-task-lib/1.3.8/28e1c993eb28c85665c50af7fb94cfb2f293d1e2eba6a0a4c1e02be443c7687e#d2b9dddee6ef83d7b3ea3d16dec4582ad99570c8"
+  integrity sha512-SG0G4Q8vvQVND8ncrpDJyAT6X+MMcuCT65A2kzYmtkVfQ92aSn+nfn0SdadZ//IsfIiNGI4aKjFfCbuu/24rdQ==
 
 "@polka/url@^1.0.0-next.9":
   version "1.0.0-next.11"
