@@ -518,7 +518,7 @@ class DecipheredTextView extends React.PureComponent {
         </div>
         <div className="main-block">
           <Collapsable
-            title={<div className="main-block-header">{"Mots du clair"}</div>}
+            title={<div className="main-block-header">{"Mots connus"}</div>}
             tutorial={
               <Tutorial
                 category="words"

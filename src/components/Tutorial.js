@@ -38,7 +38,7 @@ export default class Tutorial extends React.PureComponent {
             </p>
             <ul>
               <li><strong>Chiffré :</strong> les symboles du message chiffré ;</li>
-              <li><strong>Mots placés :</strong> un emplacement où vous pouvez placer un mot en le glissant depuis l’outil “Mots du clair” ;</li>
+              <li><strong>Mots placés :</strong> un emplacement où vous pouvez placer un mot en le glissant depuis l’outil “Mots connus” ;</li>
               <li><strong>Substitution :</strong> le résultat de l’application de votre substitution de déchiffrement (que vous pouvez définir dans l’outil Substitution en bas de la page).</li>
             </ul>
             <p>
