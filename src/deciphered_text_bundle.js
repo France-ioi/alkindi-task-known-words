@@ -382,6 +382,7 @@ class DecipheredTextView extends React.PureComponent {
           >
             <div style={{paddingTop: '20px'}}>
               <div
+                id="deciphered-scrollable"
                 ref={this.refTextBox}
                 onScroll={this.onScroll}
                 className="custom-scrollable"

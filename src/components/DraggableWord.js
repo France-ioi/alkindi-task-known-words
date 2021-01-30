@@ -21,7 +21,8 @@ export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStar
       isDragging: monitor.isDragging(),
     }),
     end: () => {
-      let dragLayerRef = document.getElementById('custom-drag-layer');
+      const scrollableContainer = document.getElementById('deciphered-scrollable');
+      const dragLayerRef = document.getElementById('custom-drag-layer');
       const itemPosition = dragLayerRef.getBoundingClientRect();
       const possibleWords = [];
       for (let rowIndex of Object.keys(wordSlotsByRow)) {
@@ -30,11 +31,12 @@ export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStar
           const element = document.getElementById(wordSlotId);
           if (element) {
             const wordPosition = element.getBoundingClientRect();
+            const wordTop = wordPosition.top - scrollableContainer.getBoundingClientRect().top;
             const overlap = !(itemPosition.right < wordPosition.left ||
               itemPosition.left > wordPosition.right ||
               itemPosition.bottom < wordPosition.top ||
               itemPosition.top > wordPosition.bottom);
-            if (overlap) {
+            if (overlap && wordTop <= scrollableContainer.clientHeight + 10 && wordTop >= -10) {
               const overlapDistance =
                 Math.min(itemPosition.right - wordPosition.left, wordPosition.right - itemPosition.left)
                 + Math.min(itemPosition.bottom - wordPosition.top, wordPosition.bottom - itemPosition.top);
