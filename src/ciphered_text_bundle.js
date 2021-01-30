@@ -57,7 +57,7 @@ class CipherTextView extends React.PureComponent {
   render () {
     const {width, scrollTop, cipherTextLines} = this.props;
 
-    const height = pageRows * cellHeight;
+    const height = pageRows * cellHeight + 10;
     const pageColumns = Math.max(5, Math.floor((width - 20) / cellWidth));
     const rowsCount = cipherTextLines.length;
     const bottom = rowsCount * cellHeight;

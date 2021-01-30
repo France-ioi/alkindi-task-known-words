@@ -517,3 +517,10 @@
 .custom-scrollable {
   border: none;
 }
+
+.words-explanation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+}

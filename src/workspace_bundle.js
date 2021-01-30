@@ -35,6 +35,10 @@ class Workspace extends React.PureComponent {
               Votre mission
             </div>
             <div className="content-block-body">
+              {'2.3' === version.version && <p className="alert alert-warning">
+                Attention, résoudre cette version peut prendre beaucoup de temps. Nous vous conseillons de résoudre d'abord les versions 2 et 3 étoiles des autres sujets.
+              </p>}
+
               {'2.1' === version.version && <p>
                 Un message a été chiffré par une <strong>substitution</strong> : chaque lettre de l’alphabet a été remplacée par un symbole, toujours le même.
               </p>}

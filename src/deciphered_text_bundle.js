@@ -13,7 +13,7 @@ import Tutorial from "./components/Tutorial";
 const cellWidth = 22; // px
 const cellHeight = 24; // px
 const pageRows = 4;
-const height = 300;
+const height = 370;
 
 function appInitReducer (state, _action) {
   return {
@@ -550,6 +550,9 @@ class DecipheredTextView extends React.PureComponent {
                   )}
                 </div>
               )}
+            </div>
+            <div className="words-explanation">
+              Glissez les mots vers l'outil "Déchiffrement".
             </div>
           </Collapsable>
         </div>

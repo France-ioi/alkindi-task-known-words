@@ -25,7 +25,8 @@ export default DragLayer(monitor => {
   return {
     itemBeingDragged: monitor.getItem(),
     componentType: monitor.getItemType(),
-    beingDragged: monitor.isDragging()
+    beingDragged: monitor.isDragging(),
+    monitor,
   };
 })(
   class CustomDragLayer extends React.PureComponent {
@@ -36,6 +37,8 @@ export default DragLayer(monitor => {
       if (!this.props.beingDragged || this.props.componentType !== 'word') {
         return null;
       }
+
+      const offset = this.props.monitor.getSourceClientOffset();
 
       const {wordIndex, word} = this.props.itemBeingDragged;
       return (
@@ -49,6 +52,7 @@ export default DragLayer(monitor => {
             left: 0,
             zIndex: 100,
             display: 'inline-block',
+            transform: `translate(${offset && offset.x ? offset.x : 0}px, ${offset && offset.y ? offset.y : 0}px)`,
           }}
         >
           <div id="custom-drag-layer">
