@@ -15,30 +15,45 @@
     <script src="task.js"></script>
 </head>
 <body>
-    <div id="container" class="container"></div>
-    <div id="substitution-pinned-view" style="margin-top: 200px"></div>
+    <div id="container" class="container" style="padding-bottom: 200px"></div>
     <script type="text/javascript">
-        window.stringsLanguage = 'fr';
-        window.modulesPath = 'bebras-modules';
+      window.stringsLanguage = 'fr';
+      window.modulesPath = 'bebras-modules';
+      window.grader = {};
 
-        var options = {
-            defaults: {
-                taskID: 'alkindi-task-known-words',
-                version: 1
-            },
-            server_module: {
-              mode: 'client',
-              baseUrl: 'http://localhost:3101/',
-            }
-        };
-        window.app = runReact(document.getElementById('container'), options);
-
-        // Set up full width for Bebras platform
-        try {
-          window.parent.document.getElementById('question-iframe').style.width = '100%';
-        } catch(e) {
+      var options = {
+        defaults: {
+          taskID: 'alkindi-task-known-words',
+          version: 1
+        },
+        server_module: {
+          mode: 'client',
+          baseUrl: 'http://localhost:3101/',
         }
-        document.getElementsByTagName('body')[0].style.width = '100%';
-        document.getElementById('container').className = "container";
+      };
+      window.app = runReact(document.getElementById('container'), options);
+
+      // Set up full width for Bebras platform
+      try {
+        window.parent.document.getElementById('question-iframe').style.width = '100%';
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        if (!isSafari) {
+          window.parent.document.getElementById('question-iframe').scrolling = 'yes';
+        } else {
+          document.getElementById('container').style.overflowY = 'scroll';
+          window.parent.addEventListener('resize', function() {
+            document.getElementById('container').style.height = document.documentElement.clientHeight + 'px';
+          });
+          setTimeout(function() {
+            document.getElementById('container').style.height = document.documentElement.clientHeight + 'px';
+          }, 1000);
+        }
+      } catch(e) {
+      }
+      document.getElementsByTagName('body')[0].style.width = '100%';
+      document.getElementById('container').className = "container";
     </script>
+    <div id="task">
+        <img src="icon.png" style="display:none">
+    </div>
 </body>
