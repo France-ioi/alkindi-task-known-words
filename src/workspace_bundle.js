@@ -46,16 +46,18 @@ class Workspace extends React.PureComponent {
                 <p>
                   Un message a été chiffré par une <strong>substitution polyalphabétique</strong> : chaque lettre de l’alphabet a été remplacée par un symbole.
                 </p>
-                <p>
-                  <strong>Attention :</strong> Pour certaines lettres, <strong>deux symboles différents peuvent être utilisés</strong>. Dans ce cas, on choisit (au hasard) de remplacer la lettre parfois par un symbole, parfois par l’autre. Par exemple, si
-                </p>
-                <ul>
-                  <li>la lettre “I” peut s’écrire “$” ou “*”</li>
-                  <li>la lettre “C” peut s’écrire “#” ou “@”</li>
-                </ul>
-                <p>
-                  alors le mot “ICI” peut s’écrire de plusieurs manières différentes : “$#$”, “$@*”, “*#*”, “*@$”, etc.
-                </p>
+                <div className="alert alert-warning">
+                  <p>
+                    <strong>Attention :</strong> Pour certaines lettres, <strong>deux symboles différents peuvent être utilisés</strong>. Dans ce cas, on choisit (au hasard) de remplacer la lettre parfois par un symbole, parfois par l’autre. Par exemple, si
+                  </p>
+                  <ul>
+                    <li>la lettre “I” peut s’écrire “$” ou “*”</li>
+                    <li>la lettre “C” peut s’écrire “#” ou “@”</li>
+                  </ul>
+                  <p>
+                    alors le mot “ICI” peut s’écrire de plusieurs manières différentes : “$#$”, “$@*”, “*#*”, “*@$”, etc.
+                  </p>
+                </div>
               </div>}
               {'2.3' === version.version && <div>
                 <p>
