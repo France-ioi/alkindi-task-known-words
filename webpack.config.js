@@ -2,7 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
-const SRC = path.resolve(__dirname, 'src');
 const isDev = process.env.NODE_ENV !== 'production';
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -20,7 +19,7 @@ const config = module.exports = {
     rules: [
       {
         test: /\.js$/,
-        include: SRC,
+        exclude: /node_modules/,
         use: [
           {loader: 'babel-loader', options: {babelrc: true}},
           {loader: "ifdef-loader", options: {
@@ -127,7 +126,7 @@ if (isDev) {
         },
       },
       extractComments: false,
-      exclude: /task/,
+      exclude: /task|tutorial/,
     }),
   ];
 }

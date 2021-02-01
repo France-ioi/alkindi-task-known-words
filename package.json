@@ -28,6 +28,7 @@
     "babel-loader": "8.0.0-beta.0",
     "compression": "^1.7.4",
     "copy-webpack-plugin": "^4.6.0",
+    "core-js": "3",
     "cross-env": "^7.0.3",
     "css-loader": "^0.28.8",
     "eslint": "^4.15.0",
@@ -79,5 +80,9 @@
     "shuffle": "^0.2.2",
     "svg-url-loader": "^3.0.3",
     "weakmap": "^0.0.6"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "last 10 years"
+  ]
 }

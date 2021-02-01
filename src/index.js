@@ -1,3 +1,5 @@
+import "core-js";
+import "regenerator-runtime/runtime";
 import update from 'immutability-helper';
 import {reactTask} from '@france-ioi/react-task-lib';
 import 'bootstrap/dist/css/bootstrap.css';
