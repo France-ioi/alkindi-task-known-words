@@ -108,6 +108,15 @@ export function applySubstitutionToText (substitution, currentCipherText, alphab
   });
 }
 
+export function applyTranspositionToWords (transposition, words) {
+  return words.map(word => {
+    const letters = word.padEnd(transposition.length).split('');
+    return letters.map((letter, index) => {
+      return transposition[index] < word.length ? letters[transposition[index]] : '';
+    }).join('');
+  }).join(' ');
+}
+
 export function memoize (fn) {
   return function () {
     const args = JSON.stringify(arguments);

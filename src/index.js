@@ -4,7 +4,7 @@ import update from 'immutability-helper';
 import {reactTask} from '@france-ioi/react-task-lib';
 import 'bootstrap/dist/css/bootstrap.css';
 import '@france-ioi/react-task-lib/dist/index.css';
-import './style.css';
+import './style.scss';
 
 // Import used Font-Awesome icons individually to allow tree-shaking reduce sensibly Webpack build size
 import {library} from '@fortawesome/fontawesome-svg-core';
@@ -23,6 +23,7 @@ library.add(faPlus, faStickyNote, faTimes, faCheck, faLock, faLockOpen, faSpinne
 import CipheredTextBundle from './ciphered_text_bundle';
 import FrequencyAnalysisBundle from './frequency_analysis_bundle';
 import SubstitutionsBundle from './substitutions_bundle';
+import TranspositionBundle from './transposition_bundle';
 import DecipheredTextBundle from './deciphered_text_bundle';
 import HintsBundle from './hints_bundle';
 import WorkspaceBundle from './workspace_bundle';
@@ -46,6 +47,7 @@ const TaskBundle = {
     HintsBundle,
     WorkspaceBundle,
     SelectionTextBundle,
+    TranspositionBundle,
   ],
   selectors: {
     getTaskState,
@@ -89,7 +91,7 @@ function taskRefreshReducer (state, _action) {
 }
 
 function getTaskAnswer (state) {
-  const {decipheredText, substitution, symbolsLocked} = state;
+  const {decipheredText, substitution, symbolsLocked, transposition} = state;
   const {lines, decipheredLetters, placedWords} = decipheredText;
 
   const answer = lines.map(({deciphered}) => {
@@ -101,6 +103,7 @@ function getTaskAnswer (state) {
     decipheredLetters,
     placedWords,
     symbolsLocked,
+    transposition,
   };
 
   return {
@@ -111,7 +114,7 @@ function getTaskAnswer (state) {
 
 function taskAnswerLoaded (state, {payload: {answer}}) {
   const {alphabet} = state.taskData;
-  const {substitution: sub, decipheredLetters, placedWords, symbolsLocked} = answer;
+  const {substitution: sub, decipheredLetters, placedWords, symbolsLocked, transposition} = answer;
 
   return update(state, {
     substitution: {$set: loadSubstitution(alphabet, sub)},
@@ -120,6 +123,7 @@ function taskAnswerLoaded (state, {payload: {answer}}) {
       placedWords: {$set: placedWords},
     },
     symbolsLocked: {$set: symbolsLocked},
+    transposition: {$set: transposition},
   });
 }
 

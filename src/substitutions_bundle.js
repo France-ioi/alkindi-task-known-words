@@ -15,7 +15,6 @@ function taskInitReducer (state, _action) {
     pinnedSubstitution: false,
     editingSubstitution: {},
     symbolsLocked: {},
-    taskReady: true,
   };
 }
 

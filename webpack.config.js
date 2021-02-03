@@ -28,10 +28,11 @@ const config = module.exports = {
         ]
       },
       {
-        test: /\.css$/,
+        test: /\.s?css$/,
         use: [
           {loader: 'style-loader', options: {sourceMap: isDev}},
           {loader: 'css-loader', options: {modules: false}},
+          {loader: 'sass-loader'},
         ]
       },
       {

@@ -52,6 +52,7 @@ const versions = {
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
+    transposition: false,
     explanation: "Un message a été chiffré par une substitution : chaque lettre est remplacée par un symbole. On connaît une liste de mots qui sont présents dans le message. Retrouvez l'intégralité du message. Vous pouvez glisser les mots connus dans la zone de déchiffrement. Un outil vous permet d'éditer la substitution de déchiffrement.",
   },
   '2.2': {
@@ -68,6 +69,7 @@ const versions = {
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
+    transposition: false,
     explanation: 'Dans ce sujet, la substitution est poly-alphabétique (un à deux symboles par lettre).',
   },
   '2.3': {
@@ -83,6 +85,7 @@ const versions = {
     hints: false,
     frequencyAnalysis: false,
     clearTextLine: false,
+    transposition: false,
     explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
   },
 };
@@ -137,7 +140,7 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
     let incorrect = false;
     let missing = false;
     for (let k = 0; k < line.length; k++) {
-      if (answerText[i].substring(k, k+1).trim().length ) {
+      if (answerText[i].substring(k, k+1).trim().length) {
         if (line.substring(k, k+1) !== answerText[i].substring(k, k+1)) {
           incorrect = true;
         }
@@ -183,6 +186,101 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
 /**
  * task methods
  */
+
+function generateTaskData (task) {
+  const version = task.params.version || 1;
+  let {clearMessage, clearMessageWords, clearTextLength, randomSeed, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax, substitution: versionSubstitution} = versions[version];
+
+  const rng0 = seedrandom(randomSeed ? randomSeed : task.random_seed + 16);
+
+  const symbolsToUse = new Array(alphabet.length).fill(1);
+  for (let i = 0; i < (symbolsCountToUse - alphabet.length); i++) {
+    while (true) {
+      const letter = Math.floor(rng0() * alphabet.length);
+      if (symbolsToUse[letter] < symbolsPerLetterMax) {
+        symbolsToUse[letter]++;
+        break;
+      }
+    }
+  }
+
+  let substitution, symbols;
+  if (versionSubstitution) {
+    substitution = versionSubstitution;
+    symbols = versionSubstitution.reduce((cur, next) => [...cur, ...next], []);
+    symbols = shuffle({random: rng0, deck: symbols}).cards.join('');
+  } else {
+    let substitutionResult = generateSubstitution(rng0, symbolsToUse);
+    substitution = substitutionResult.substitution;
+    symbols = substitutionResult.symbols;
+  }
+
+  let clearText;
+  if (clearMessage && clearMessage.length) {
+    clearText = clearMessage;
+  } else {
+    clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
+  }
+
+  const words = clearText.split(' ');
+  const longestWordLength = words.reduce((maxSize, next) => Math.max(maxSize, next.length), 0);
+
+  const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
+
+  const cipherTextSubstitution = applySubstitution(clearText, substitution, rng0);
+
+  const transposition = shuffle({random: rng0, deck: range(0, longestWordLength)}).cards;
+  const cipherText = applyTransposition(cipherTextSubstitution, transposition);
+
+  const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
+
+  const clearWords = clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
+  clearWords.sort();
+
+  const hintsRequested = getHintsRequested(task.hints_requested);
+
+  let hints = grantHints(hintsRequested, clearText);
+
+  // if (freeHintRows && freeHintRows.length) {
+  //   const newHints = [];
+  //   for (let i = 0; i < freeHintRows.length; i++) {
+  //     newHints.push({rowIndex: freeHintRows[i], value: clearTextLines[i].clearText, type: 'type_3'});
+  //   }
+  //   hints = hints.concat(newHints);
+  // }
+
+  const publicData = {
+    alphabet,
+    cipherText,
+    cipherTextLines,
+    symbols,
+    hints,
+    clearWords,
+    longestWordLength,
+    version: versions[version]
+  };
+
+  const privateData = {
+    clearText,
+    clearTextLines,
+  };
+
+  console.log(publicData, privateData);
+
+  return {publicData, privateData};
+}
+
+function applyTransposition (clearText, transposition) {
+  const words = clearText.split(' ');
+
+  return words.map(word => {
+    const letters = word.padEnd(transposition.length).split('');
+
+    return letters.map((letter, index) => {
+      return transposition[index] < word.length ? letters[transposition[index]] : '';
+    }).join('');
+  }).join(' ');
+}
 
 function applySubstitution (data, substitution, rng0) {
   return data.split('').map(letter => {
@@ -243,79 +341,6 @@ function extractWords (text, wordsCount, rng0) {
   return shuffledWords.slice(0, wordsCount);
 }
 
-function generateTaskData (task) {
-  const version = task.params.version || 1;
-  let {clearMessage, clearMessageWords, clearTextLength, randomSeed, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax, substitution: versionSubstitution} = versions[version];
-
-  const rng0 = seedrandom(randomSeed ? randomSeed : task.random_seed + 16);
-
-  const symbolsToUse = new Array(alphabet.length).fill(1);
-  for (let i = 0; i < (symbolsCountToUse - alphabet.length); i++) {
-    while (true) {
-      const letter = Math.floor(rng0() * alphabet.length);
-      if (symbolsToUse[letter] < symbolsPerLetterMax) {
-        symbolsToUse[letter]++;
-        break;
-      }
-    }
-  }
-
-  let substitution, symbols;
-  if (versionSubstitution) {
-    substitution = versionSubstitution;
-    symbols = versionSubstitution.reduce((cur, next) => [...cur, ...next], []);
-    symbols = shuffle({random: rng0, deck: symbols}).cards.join('');
-  } else {
-    let substitutionResult = generateSubstitution(rng0, symbolsToUse);
-    substitution = substitutionResult.substitution;
-    symbols = substitutionResult.symbols;
-  }
-
-  let clearText;
-  if (clearMessage && clearMessage.length) {
-    clearText = clearMessage;
-  } else {
-    clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
-  }
-
-  const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
-
-  const cipherText = applySubstitution(clearText, substitution, rng0);
-  const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
-
-  const clearWords = clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
-  clearWords.sort();
-
-  const hintsRequested = getHintsRequested(task.hints_requested);
-
-  let hints = grantHints(hintsRequested, clearText);
-
-  // if (freeHintRows && freeHintRows.length) {
-  //   const newHints = [];
-  //   for (let i = 0; i < freeHintRows.length; i++) {
-  //     newHints.push({rowIndex: freeHintRows[i], value: clearTextLines[i].clearText, type: 'type_3'});
-  //   }
-  //   hints = hints.concat(newHints);
-  // }
-
-  const publicData = {
-    alphabet,
-    cipherText,
-    cipherTextLines,
-    symbols,
-    hints,
-    clearWords,
-    version: versions[version]
-  };
-
-  const privateData = {
-    clearText,
-    clearTextLines,
-  };
-
-  return {publicData, privateData};
-}
-
 function hintRequestEqual (h1, h2) {
   return (
     h1.type === h2.type
@@ -332,7 +357,6 @@ function getHintsRequested (hints_requested) {
     .filter(hr => hr !== null)
     .map(hint => (typeof hint === "string") ? JSON.parse(hint) : hint);
 }
-
 
 function grantHints (hintRequests, clearTextLines) {
   return hintRequests.map((hintRequest) => {

@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {range} from 'range';
-import {applySubstitutionToText, wrapAroundLines} from './utils';
+import {applySubstitutionToText, wrapAroundLines, applyTranspositionToWords} from './utils';
 import DecipheredTextCell from "./components/DecipheredTextCell";
 import {put, select, takeEvery} from "redux-saga/effects";
 import {DraggableWord} from "./components/DraggableWord";
@@ -81,7 +81,7 @@ function decipheredTextLateReducer (state, _action) {
 }
 
 function applyRefreshedData (state) {
-  let {taskData: {cipherTextLines, alphabet, hints, clearWords}, decipheredText, substitution, symbolsLocked} = state;
+  let {taskData: {cipherTextLines, alphabet, hints, clearWords}, decipheredText, substitution, symbolsLocked, transposition} = state;
   const {decipheredLetters, placedWords} = decipheredText;
 
   const hintsIndex = buildHintsIndex(hints);
@@ -100,10 +100,13 @@ function applyRefreshedData (state) {
 
   let decipheredTextLines = cipherTextLines.map((line, rowIndex) => {
     const cipherText = line.split('');
+    const words = line.split(' ');
+    const transpositionResult = transposition ? applyTranspositionToWords(transposition, words) : null;
 
-    let currentCipherText = cipherText.map(letter => {
+    let currentCipherText = cipherText.map((letter, index) => {
       return {
         value: letter,
+        transposition: transpositionResult ? transpositionResult.substring(index, index + 1) : null,
       };
     });
 
@@ -116,7 +119,8 @@ function applyRefreshedData (state) {
       };
     });
 
-    let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet, symbolsLocked);
+    let substitutionInput = currentCipherText.map(({value, transposition}) => ({value: transposition ? transposition : value}));
+    let substitutionResult = applySubstitutionToText(substitution, substitutionInput, alphabet, symbolsLocked);
     for (let i = 0; i < substitutionResult.length; i++) {
       deciphered[i].result = substitutionResult[i].value;
     }
@@ -402,7 +406,7 @@ class DecipheredTextView extends React.PureComponent {
                         Mots placés
                       </div>
                       <div>
-                        Substitution
+                        {false !== version.transposition ? 'Résultat' : 'Substitution'}
                       </div>
                       {false !== version.clearTextLine &&
                         <div>
