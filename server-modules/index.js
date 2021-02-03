@@ -18,11 +18,10 @@ const versions = {
   // For test only
   '0.1': {
     version: '0.1',
-    clearTextLength: 30,
+    clearTextLength: 10,
     symbolsPerLine: 27,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
-    hints: false,
     frequencyAnalysis: false,
     explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
@@ -33,7 +32,6 @@ const versions = {
     symbolsPerLine: 27,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
-    hints: false,
     frequencyAnalysis: false,
     explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
@@ -239,7 +237,7 @@ function generateTaskData (task) {
 
   const hintsRequested = getHintsRequested(task.hints_requested);
 
-  let hints = grantHints(hintsRequested, clearText);
+  let hints = grantHints(hintsRequested, clearTextLines);
 
   // if (freeHintRows && freeHintRows.length) {
   //   const newHints = [];
@@ -363,9 +361,9 @@ function grantHints (hintRequests, clearTextLines) {
     let {rowIndex, position, type} = hintRequest;
 
     if (type === "type_1") {
-      return {rowIndex, position, value: clearTextLines[rowIndex].clearText.substring(position, position + 1), type};
+      return {rowIndex, position, value: clearTextLines[rowIndex].substring(position, position + 1), type};
     } else if (type === "type_2") {
-      return {rowIndex, value: clearTextLines[rowIndex].clearText, type};
+      return {rowIndex, value: clearTextLines[rowIndex], type};
     }
   });
 }
