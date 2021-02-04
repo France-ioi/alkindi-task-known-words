@@ -110,7 +110,7 @@ class Hints extends React.PureComponent {
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                       Êtes-vous sûr de vouloir prendre cet indice ? Il vous coûtera <strong>{this.state.hintRequest && 'type_2' === this.state.hintRequest.type ? 10 : 5} points</strong>.
+                       Êtes-vous sûr de vouloir prendre cet indice ? Il vous coûtera <strong>{this.state.hintRequest && 'type_2' === this.state.hintRequest.type ? '10 points' : '1 point'}</strong>.
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => this.setModalShow(false)}>Annuler</Button>
