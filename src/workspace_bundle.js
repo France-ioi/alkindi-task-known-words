@@ -11,19 +11,19 @@ import Tutorial from "./components/Tutorial";
 function WorkspaceSelector (state) {
   const {
     taskData: {version, frequencyAnalysis},
-    views: {CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, SelectionText},
+    views: {CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints},
   } = state;
 
   return {
     version, frequencyAnalysis,
-    CipheredText, FrequencyAnalysis, Substitution, DecipheredText, HintRequestFeedback, Hints, SelectionText, Transposition,
+    CipheredText, FrequencyAnalysis, Substitution, DecipheredText, HintRequestFeedback, Hints, Transposition,
   };
 }
 
 class Workspace extends React.PureComponent {
   render () {
     const {
-      CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, SelectionText, version,
+      CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, version,
     } = this.props;
     return (
       <div>
@@ -109,12 +109,6 @@ class Workspace extends React.PureComponent {
           {this.props.version.frequencyAnalysis !== false &&
             <div className="main-block">
               <Collapsable title={<div className="main-block-header">{"Analyse de fréquence"}</div>}>
-                {this.props.version.frequencyAnalysisWhole !== true &&
-                  <div style={{marginTop: '20px'}}>
-                    <h3 className="sub-block-title">Lignes sélectionnées</h3>
-                    <SelectionText/>
-                  </div>
-                }
                 <div style={{marginTop: '20px'}}>
                   <FrequencyAnalysis />
                 </div>

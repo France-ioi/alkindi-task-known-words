@@ -22,7 +22,6 @@ const versions = {
     symbolsPerLine: 27,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
-    frequencyAnalysis: false,
     explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
 
@@ -31,8 +30,8 @@ const versions = {
     clearTextLength: 400,
     symbolsPerLine: 27,
     extractedWordsCount: 40,
-    symbolsPerLetterMax: 1,
-    frequencyAnalysis: false,
+    symbolsCountToUse: 35,
+    symbolsPerLetterMax: 3,
     explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
 
@@ -235,6 +234,8 @@ function generateTaskData (task) {
   const clearWords = clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
   clearWords.sort();
 
+  const frequencyAnalysis = computeFrequencyAnalysis(clearText);
+
   const hintsRequested = getHintsRequested(task.hints_requested);
 
   let hints = grantHints(hintsRequested, clearTextLines);
@@ -255,6 +256,7 @@ function generateTaskData (task) {
     hints,
     clearWords,
     longestWordLength,
+    frequencyAnalysis,
     version: versions[version]
   };
 
@@ -337,6 +339,23 @@ function extractWords (text, wordsCount, rng0) {
   const shuffledWords = shuffle({random: rng0, deck: words}).cards;
 
   return shuffledWords.slice(0, wordsCount);
+}
+
+function computeFrequencyAnalysis (clearText) {
+  const reversedAlphabet = {};
+  for (let i = 0; i < alphabet.length; i++) {
+    reversedAlphabet[alphabet.substring(i, i + 1)] = i;
+  }
+
+  const frequencyAnalysis = alphabet.split('').map(() => 0);
+  for (let j = 0; j < clearText.length; j++) {
+    const letter = clearText.substring(j, j + 1);
+    if (letter.trim().length) {
+      frequencyAnalysis[reversedAlphabet[letter]]++;
+    }
+  }
+
+  return frequencyAnalysis;
 }
 
 function hintRequestEqual (h1, h2) {

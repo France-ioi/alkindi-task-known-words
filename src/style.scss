@@ -165,62 +165,100 @@
 
 .frequency-analysis-container {
   padding-bottom: 10px;
+  .frequency-analysis-scrollable {
+    position: relative;
+    overflow-x: auto;
+    margin-bottom: 10px;
+    width: 558px;
+    margin-top: -250px;
+    padding-top: 250px;
+    margin-left: -15px;
+    padding-left: 15px;
+    margin-right: -15px;
+    padding-right: 15px;
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+  }
 }
 .frequency-analysis-letters {
   display: flex;
   margin-left: 10px;
 }
 .frequency-analysis-categories {
-  width: 170px;
   line-height: 14px;
   margin-bottom: 10px;
   display: flex;
 }
 .frequency-analysis-category {
   display: flex;
-  align-items: center;
-  text-align: left;
+  text-align: right;
+  justify-content: flex-end;
   line-height: 16px;
   padding-left: 20px;
-  min-width: 150px;
-  max-width: 150px;
+  min-width: 160px;
+  max-width: 160px;
   margin-right: 20px;
+  &.is-centered {
+    align-items: center;
+  }
+  &.bottom-up {
+    align-items: flex-end;
+  }
 }
 .frequency-analysis-items {
-  display: flex;
-}
-.frequency-analysis-items.bottom-up {
-  align-items: baseline;
+  > div {
+    display: inline-block;
+  }
+  &.bottom-up {
+    align-items: flex-end;
+  }
+  &.not-wrappable {
+    white-space: nowrap;
+    display: flex;
+  }
 }
 .frequency-analysis-items > div {
   margin-right: 1px;
   width: 20px;
+  min-width: 20px;
 }
 .frequency-bar {
   width: 15px;
   background: #88BB88;
-  border-radius: 2px;
   margin: auto;
+}
+
+.frequency-value {
+  font-size: 16px;
+  color: #88BB88;
+  letter-spacing: -1.9px;
+  margin-left: -1.9px;
+  text-align: center;
+  margin-top: 9px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+.bottom-up .frequency-value {
+  margin-top: 0;
+  margin-bottom: 1px;
 }
 
 .frequency-selection-letter {
   font-family: monospace;
   font-weight: bold;
-  color: #30242B;
+  color: #88BB88;
   font-size: 18px;
   height: 20px;
   display: flex;
-  align-items: center;
   justify-content: center;
   text-align: center;
-  border: solid 1px transparent;
   border-radius: 2px;
 }
 .frequency-substitute-letter {
   color: #30242B;
   font-weight: bold;
-  border: solid 1px #999;
-  border-radius: 2px;
   font-family: monospace;
   text-align: center;
   font-size: 18px;
@@ -235,7 +273,62 @@
   height: 35px;
   justify-content: center;
 }
+.frequency-symbols-container {
+  display: block;
+}
 
+.frequency-analysis-section {
+  display: flex;
+  .frequency-analysis-categories {
+    display: block;
+  }
+}
+
+.frequency-details {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: #88BB88;
+  border-radius: 2px;
+  font-size: 16px;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 24px;
+  .frequency-details-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .frequency-details-symbol {
+      font-weight: bold;
+      padding: 1px 6px;
+      flex: 1 0;
+    }
+    .frequency-details-count {
+      padding: 1px 6px;
+      letter-spacing: -1.9px;
+      margin-left: -1.9px;
+      flex: 1 0;
+    }
+    & + .frequency-details-element {
+      border-top: solid 2px #468A43;
+    }
+  }
+  &:before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-top: 10px solid #88BB88;
+    border-right: 10px solid transparent;
+    border-left: 10px solid transparent;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -7px;
+    z-index: -1;
+  }
+}
 
 .substitution-letters {
   margin-left: 150px;
