@@ -170,8 +170,8 @@
     overflow-x: auto;
     margin-bottom: 10px;
     width: 558px;
-    margin-top: -250px;
-    padding-top: 250px;
+    margin-top: -80px;
+    padding-top: 80px;
     margin-left: -15px;
     padding-left: 15px;
     margin-right: -15px;
@@ -698,5 +698,14 @@
   .arrows {
     position: absolute;
     top: 10px;
+  }
+}
+
+.working-area {
+  height: 250px;
+  padding: 20px;
+  .droppable-word-container {
+    width: 100%;
+    height: 100%;
   }
 }

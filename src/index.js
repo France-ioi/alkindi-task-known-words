@@ -27,6 +27,7 @@ import TranspositionBundle from './transposition_bundle';
 import DecipheredTextBundle from './deciphered_text_bundle';
 import HintsBundle from './hints_bundle';
 import WorkspaceBundle from './workspace_bundle';
+import WorkingAreaBundle from './working_area_bundle';
 import {loadSubstitution} from './utils';
 
 
@@ -46,6 +47,7 @@ const TaskBundle = {
     HintsBundle,
     WorkspaceBundle,
     TranspositionBundle,
+    WorkingAreaBundle,
   ],
   selectors: {
     getTaskState,

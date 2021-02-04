@@ -50,6 +50,7 @@ const versions = {
     frequencyAnalysis: false,
     clearTextLine: false,
     transposition: false,
+    workingArea: false,
     explanation: "Un message a été chiffré par une substitution : chaque lettre est remplacée par un symbole. On connaît une liste de mots qui sont présents dans le message. Retrouvez l'intégralité du message. Vous pouvez glisser les mots connus dans la zone de déchiffrement. Un outil vous permet d'éditer la substitution de déchiffrement.",
   },
   '2.2': {
@@ -67,6 +68,7 @@ const versions = {
     frequencyAnalysis: false,
     clearTextLine: false,
     transposition: false,
+    workingArea: false,
     explanation: 'Dans ce sujet, la substitution est poly-alphabétique (un à deux symboles par lettre).',
   },
   '2.3': {
@@ -83,6 +85,7 @@ const versions = {
     frequencyAnalysis: false,
     clearTextLine: false,
     transposition: false,
+    workingArea: false,
     explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
   },
 };
