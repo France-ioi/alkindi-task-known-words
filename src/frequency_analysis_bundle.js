@@ -171,7 +171,7 @@ class FrequencyAnalysisView extends React.PureComponent {
             <div className="frequency-analysis-items is-flex">
               {range(0, alphabetSize).map(index =>
                 <div key={index}>
-                  <div className="frequency-bar" style={{height: `${Math.round(referenceFrequencies[index].proba * scale)}px`}}/>
+                  <div className="frequency-bar" style={{height: `${Math.round(referenceFrequencies[index].proba * scale)}px`, borderRadius: '2px'}}/>
                   <div className="frequency-value">{referenceFrequencies[index].count}</div>
                 </div>
               )}
