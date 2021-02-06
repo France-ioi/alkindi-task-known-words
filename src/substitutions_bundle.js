@@ -22,7 +22,7 @@ function taskRefreshReducer (state) {
   return {
     ...state,
     editingSubstitution: {},
-    pinnedSubstitution: false,
+    // pinnedSubstitution: false,
   };
 }
 

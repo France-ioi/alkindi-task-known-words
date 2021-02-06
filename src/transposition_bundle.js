@@ -15,15 +15,6 @@ function taskInitReducer (state) {
   };
 }
 
-function taskRefreshReducer (state) {
-  const {taskData: {longestWordLength}} = state;
-
-  return {
-    ...state,
-    transposition: range(0, longestWordLength),
-  };
-}
-
 function transpositionLetterMovedReducer (state, {payload: {oldPosition, newPosition}}) {
   const {transposition} = state;
   const previousLetter = transposition[oldPosition];
@@ -215,7 +206,6 @@ export default {
   },
   actionReducers: {
     taskInit: taskInitReducer,
-    taskRefresh: taskRefreshReducer,
     transpositionLetterMoved: transpositionLetterMovedReducer,
   },
   views: {
