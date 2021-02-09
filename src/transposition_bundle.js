@@ -1,6 +1,5 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {NumberPicker} from '@france-ioi/react-task-lib';
 import {range} from 'range';
 import {DraggableTranspositionLetter} from "./components/DraggableTranspositionLetter";
 import update from 'immutability-helper';
@@ -35,27 +34,30 @@ function TranspositionSelector (state) {
       transpositionLetterMoved,
     },
     transposition,
+    decipheredText: {selectedDecipheredWord, lines},
     taskData: {longestWordLength},
   } = state;
+
+  let exampleWord = null;
+  if (selectedDecipheredWord) {
+    const line = lines[selectedDecipheredWord.rowIndex];
+    const wordIndexBeginning = line.ciphered.join('').split(' ', selectedDecipheredWord.wordIndex).join('').length + selectedDecipheredWord.wordIndex;
+    const wordLength = line.ciphered.slice(wordIndexBeginning).join('').split(' ')[0].length;
+    exampleWord = line.deciphered.slice(wordIndexBeginning, wordIndexBeginning + wordLength);
+  }
 
   return {
     transposition,
     longestWordLength,
+    exampleWord,
 
     transpositionLetterMoved,
   };
 }
 
 class TranspositionBundleView extends React.PureComponent {
-  constructor (props) {
-    super(props);
-    this.state = {lettersCount: 5};
-  }
-
   render () {
-    const {transposition, longestWordLength} = this.props;
-    const letters = 'LOREMIPSUMDOLORSITAMET';
-    const alphabet = 'ABCDEFGHIJKLMMNOPQRSTUVWXYZ';
+    const {transposition, longestWordLength, exampleWord} = this.props;
 
     const letterWidth = 20 + 4*2; // px
     const letterHeight = 20; // px
@@ -77,10 +79,17 @@ class TranspositionBundleView extends React.PureComponent {
     return (
       <div className="transposition">
         <div className="visual">
+          <div className="symbols">
+            {range(0, longestWordLength).map(i =>
+              <div className="original-letter letter-cell" key={i}>
+                {exampleWord && i < exampleWord.length ? (exampleWord[i].ciphered ? exampleWord[i].ciphered : '_') : ''}
+              </div>
+            )}
+          </div>
           <div className="original">
             {range(0, longestWordLength).map(i =>
               <div className="transposition-letter original-letter letter-cell" key={i}>
-                {letters.substring(i, i+1)}
+                {exampleWord && i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
               </div>
             )}
             <div className="arrows">
@@ -107,36 +116,22 @@ class TranspositionBundleView extends React.PureComponent {
               <DraggableTranspositionLetter
                 key={transposition[i]}
                 index={i}
-                letter={letters.substring(transposition[i], transposition[i]+1)}
+                letter={exampleWord && transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
                 moveLetter={this.moveLetter}
               />
             )}
           </div>
         </div>
-        <div className="example">
-          <div>
-            <div className="letters-label">
-              Exemple avec
-            </div>
-            <div className="picker">
-              <NumberPicker
-                minValue={1}
-                maxValue={longestWordLength}
-                count={this.state.lettersCount}
-                onChange={(value) => this.changeLettersCount(value)}
-              />
-              <span>lettres</span>
-            </div>
-          </div>
+        {exampleWord && <div className="example">
           <div style={{marginTop: '15px'}}>
             <div>
               Mot de départ
             </div>
             <div>
               <div className="is-flex">
-                {range(0, this.state.lettersCount).map(i =>
+                {range(0, exampleWord.length).map(i =>
                   <div className="transposition-letter letter-cell" key={i}>
-                    {alphabet.substring(i, i+1)}
+                    {exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_'}
                   </div>
                 )}
               </div>
@@ -150,7 +145,7 @@ class TranspositionBundleView extends React.PureComponent {
               <div className="is-flex">
                 {range(0, longestWordLength).map(i =>
                   <div className="transposition-letter letter-cell" key={i}>
-                    {i < this.state.lettersCount ? alphabet.substring(i, i+1) : ''}
+                    {i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
                   </div>
                 )}
               </div>
@@ -164,7 +159,7 @@ class TranspositionBundleView extends React.PureComponent {
               <div className="is-flex">
                 {range(0, longestWordLength).map(i =>
                   <div className="transposition-letter letter-cell" key={i}>
-                    {transposition[i] < this.state.lettersCount ? alphabet.substring(transposition[i], transposition[i]+1) : ''}
+                    {transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
                   </div>
                 )}
               </div>
@@ -177,22 +172,17 @@ class TranspositionBundleView extends React.PureComponent {
             <div>
               <div className="is-flex">
                 {range(0, longestWordLength).map(i =>
-                  transposition[i] < this.state.lettersCount ? <div className="transposition-letter letter-cell" key={i}>
-                    {alphabet.substring(transposition[i], transposition[i]+1)}
+                  transposition[i] < exampleWord.length ? <div className="transposition-letter letter-cell" key={i}>
+                    {exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_'}
                   </div> : null
                 )}
               </div>
             </div>
           </div>
-        </div>
+        </div>}
+        {!exampleWord && <p className="words-explanation">Sélectionnez un mot depuis l'outil "Déchiffrement" pour voir l'effet de la transposition sur ce mot.</p>}
       </div>
     );
-  }
-
-  changeLettersCount = (value) => {
-    this.setState({
-      lettersCount: value,
-    });
   }
 
   moveLetter = (oldPosition, newPosition) => {

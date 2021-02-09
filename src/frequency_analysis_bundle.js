@@ -182,7 +182,6 @@ class FrequencyAnalysisView extends React.PureComponent {
   }
 
   displayDetails = (index) => {
-    console.log('display', index);
     this.setState({
       tooltipIndex: index,
     });

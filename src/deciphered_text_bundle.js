@@ -35,6 +35,7 @@ function taskInitReducer (state) {
     decipheredLetters: {},
     placedWords: {},
     selectedWord: null,
+    selectedDecipheredWord: null,
   };
 
   let newState = {...state, decipheredText, editingDecipher: null};
@@ -51,6 +52,7 @@ function taskRefreshReducer (state) {
     decipheredText: {
       ...newState.decipheredText,
       selectedWord: null,
+      selectedDecipheredWord: null,
     },
     editingDecipher: null,
   });
@@ -100,13 +102,10 @@ function applyRefreshedData (state) {
 
   let decipheredTextLines = cipherTextLines.map((line, rowIndex) => {
     const cipherText = line.split('');
-    const words = line.split(' ');
-    const transpositionResult = transposition ? applyTranspositionToWords(transposition, words) : null;
 
-    let currentCipherText = cipherText.map((letter, index) => {
+    let currentCipherText = cipherText.map((letter) => {
       return {
         value: letter,
-        transposition: transpositionResult ? transpositionResult.substring(index, index + 1) : null,
       };
     });
 
@@ -119,13 +118,46 @@ function applyRefreshedData (state) {
       };
     });
 
-    let substitutionInput = currentCipherText.map(({value, transposition}) => ({value: transposition ? transposition : value}));
-    let substitutionResult = applySubstitutionToText(substitution, substitutionInput, alphabet, symbolsLocked);
+    let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet, symbolsLocked);
     for (let i = 0; i < substitutionResult.length; i++) {
-      deciphered[i].result = substitutionResult[i].value;
+      deciphered[i].substitutionResult = substitutionResult[i].value;
     }
 
-    substitutionResult = substitutionResult.map((cell, position) => {
+    let finalResult = substitutionResult;
+    if (transposition) {
+      const words = [];
+      let lastPosition = 0;
+      for (let i = 0; i < deciphered.length; i++) {
+        if (deciphered[i].ciphered === ' ') {
+          const word = substitutionResult.slice(lastPosition, i);
+          lastPosition = i + 1;
+          words.push(word);
+        }
+      }
+
+      const word = substitutionResult.slice(lastPosition, deciphered.length);
+      words.push(word);
+
+      const transpositionResult = applyTranspositionToWords(transposition, words);
+      let recombinedChain = [];
+      let first = true;
+      for (let word of transpositionResult) {
+        if (first) {
+          recombinedChain = [...word];
+        } else {
+          recombinedChain = [...recombinedChain, {value: null, locked: false}, ...word];
+        }
+        first = false;
+      }
+
+      finalResult = recombinedChain;
+    }
+
+    for (let i = 0; i < finalResult.length; i++) {
+      deciphered[i].result = finalResult[i].value;
+    }
+
+    finalResult = finalResult.map((cell, position) => {
       if (!cell.value) {
         return cell;
       }
@@ -148,7 +180,7 @@ function applyRefreshedData (state) {
       index: rowIndex,
       ciphered: cipherText,
       words: rowIndex in wordsByRow ? wordsByRow[rowIndex] : {},
-      substitutionResult,
+      finalResult,
       deciphered,
     };
   });
@@ -248,6 +280,16 @@ function decipheredWordSelectedReducer (state, {payload: {wordIndex}}) {
   return update(state, {decipheredText: {selectedWord: {$set: wordIndex}}});
 }
 
+function decipheredDecipheredWordSelectedReducer (state, {payload: {rowIndex, wordIndex}}) {
+  const {decipheredText: {selectedDecipheredWord}} = state;
+
+  if (selectedDecipheredWord && selectedDecipheredWord.rowIndex === rowIndex && selectedDecipheredWord.wordIndex === wordIndex) {
+    return update(state, {decipheredText: {selectedDecipheredWord: {$set: null}}});
+  }
+
+  return update(state, {decipheredText: {selectedDecipheredWord: {$set: {rowIndex, wordIndex}}}});
+}
+
 function decipheredCellEditMovedReducer (state, {payload: {rowIndex, position, cellMove}}) {
   let {decipheredText: {lines}, taskData: {cipherTextLines}} = state;
   const cellStop = {rowIndex, position};
@@ -301,20 +343,24 @@ function DecipheredTextViewSelector (state) {
     decipheredTextResized,
     decipheredTextScrolled,
     decipheredCellEditMoved,
-    schedulingJump,
     decipheredWordMoved,
     decipheredWordSelected,
+    decipheredDecipheredWordSelected,
   } = actions;
-  const {width, scrollTop, lines, pageColumns, placedWords, selectedWord} = decipheredText;
+  const {width, scrollTop, lines, pageColumns, placedWords, selectedWord, selectedDecipheredWord} = decipheredText;
 
   return {
-    decipheredCellEditStarted, decipheredCellEditCancelled, decipheredCellCharChanged,
+    decipheredCellEditStarted,
+    decipheredCellEditCancelled,
+    decipheredCellCharChanged,
     decipheredCellEditMoved,
     decipheredWordMoved,
     decipheredWordSelected,
-    version,
-    decipheredTextResized, decipheredTextScrolled, schedulingJump,
-    editingDecipher, width, scrollTop, lines, pageColumns, clearWords, placedWords, selectedWord,
+    decipheredDecipheredWordSelected,
+    decipheredTextResized,
+    decipheredTextScrolled,
+
+    version, editingDecipher, width, scrollTop, lines, pageColumns, clearWords, placedWords, selectedWord, selectedDecipheredWord,
   };
 }
 
@@ -324,7 +370,7 @@ class DecipheredTextView extends React.PureComponent {
     this.state = {dragElement: null};
   }
   render () {
-    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords, selectedWord} = this.props;
+    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords, selectedWord, selectedDecipheredWord} = this.props;
     const rowsCount = lines.length;
     const linesHeight = [];
 
@@ -446,6 +492,11 @@ class DecipheredTextView extends React.PureComponent {
                                 letters={letters}
                                 draggingWord={this.state.dragElement || clearWords[selectedWord]}
                               />
+                              <div
+                                className={`deciphered-word-selectable ${selectedDecipheredWord && selectedDecipheredWord.rowIndex === rowIndex && selectedDecipheredWord.wordIndex === resultIndex ? 'deciphered-word-selected' : ''}`}
+                                style={{position: 'absolute', width: `calc(100% + 13px)`, height: `${linesHeight[rowIndex].height - 20 + 14}px`}}
+                                onClick={() => this.selectDecipheredWord(rowIndex, resultIndex)}
+                              />
                             </div>
                           )}
                           {rowIndex in wordsByRow && wordsByRow[rowIndex].map(({position, wordIndex}) =>
@@ -468,10 +519,10 @@ class DecipheredTextView extends React.PureComponent {
                         </div>
                         {/*Result*/}
                         <div style={{position: 'absolute', top: `${2*cellHeight}px`}}>
-                          {lines[rowIndex].substitutionResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
+                          {lines[rowIndex].finalResult.slice(0, pageColumns).map(({value, locked, conflict}, resultIndex) =>
                             <div
                               key={resultIndex}
-                              className={`deciphered-result-cell letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}${false !== version.frequencyAnalysis && !version.frequencyAnalysisWhole ? ' deciphered-selectable' : ''}`}
+                              className={`deciphered-result-cell letter-cell ${locked ? ' deciphered-locked' : ''}${conflict ? ' deciphered-conflict' : ''}`}
                               style={{left: `${resultIndex * cellWidth}px`, width: `${cellWidth}px`}}
                             >
                               {value ? value : (lines[rowIndex].ciphered[resultIndex] !== ' ' ? <span className="deciphered-underscore">_</span> : '')}
@@ -601,6 +652,9 @@ class DecipheredTextView extends React.PureComponent {
   onWordSelected = (wordIndex) => {
     this.props.dispatch({type: this.props.decipheredWordSelected, payload: {wordIndex}});
   };
+  selectDecipheredWord = (rowIndex, wordIndex) => {
+    this.props.dispatch({type: this.props.decipheredDecipheredWordSelected, payload: {rowIndex, wordIndex}});
+  };
 }
 
 export default {
@@ -613,6 +667,7 @@ export default {
     decipheredCellEditMoved: 'DecipheredText.Cell.Edit.Moved',
     decipheredWordMoved: 'DecipheredText.Word.Moved',
     decipheredWordSelected: 'DecipheredText.Word.Selected',
+    decipheredDecipheredWordSelected: 'DecipheredText.DecipheredWord.Selected',
   },
   actionReducers: {
     appInit: appInitReducer,
@@ -626,6 +681,7 @@ export default {
     decipheredCellEditMoved: decipheredCellEditMovedReducer,
     decipheredWordMoved: decipheredWordMovedReducer,
     decipheredWordSelected: decipheredWordSelectedReducer,
+    decipheredDecipheredWordSelected: decipheredDecipheredWordSelectedReducer,
   },
   lateReducer: decipheredTextLateReducer,
   saga: function* () {

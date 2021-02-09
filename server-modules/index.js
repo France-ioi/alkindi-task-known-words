@@ -268,7 +268,7 @@ function generateTaskData (task) {
     clearTextLines,
   };
 
-  console.log(publicData, privateData);
+  // console.log(publicData, privateData);
 
   return {publicData, privateData};
 }
@@ -277,10 +277,16 @@ function applyTransposition (clearText, transposition) {
   const words = clearText.split(' ');
 
   return words.map(word => {
-    const letters = word.padEnd(transposition.length).split('');
+    const exampleWord = range(0, word.length);
+
+    const transpositionInverse = range(0, transposition.length)
+      .filter(i => transposition[i] < exampleWord.length)
+      .map(i => exampleWord[transposition[i]]);
+
+    const letters = word.split('');
 
     return letters.map((letter, index) => {
-      return transposition[index] < word.length ? letters[transposition[index]] : '';
+      return letters[transpositionInverse.indexOf(index)];
     }).join('');
   }).join(' ');
 }

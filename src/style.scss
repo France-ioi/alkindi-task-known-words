@@ -170,8 +170,8 @@
     overflow-x: auto;
     margin-bottom: 10px;
     width: 558px;
-    margin-top: -80px;
-    padding-top: 80px;
+    margin-top: -90px;
+    padding-top: 90px;
     margin-left: -15px;
     padding-left: 15px;
     margin-right: -15px;
@@ -286,10 +286,10 @@
 
 .frequency-details {
   position: absolute;
-  bottom: 36px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 100;
+  z-index: 9;
   background: #88BB88;
   border-radius: 2px;
   font-size: 16px;
@@ -537,6 +537,19 @@
   margin: 0 6px 0 2px;
   width: 100%;
 }
+
+.deciphered-word-selected {
+  background: rgba(136,187,136,0.20);
+  border: 4px solid #88BB88;
+  border-radius: 5px;
+}
+
+.deciphered-word-selectable {
+  top: -34px;
+  left: -6px;
+  cursor: pointer;
+}
+
 [draggable="true"] {
   transform: translate(0, 0);
   opacity: 0.999;
@@ -672,6 +685,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .symbols {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+    .original-letter {
+      margin: 0 4px;
+      width: 20px;
+    }
   }
 
   .original {

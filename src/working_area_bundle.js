@@ -17,7 +17,6 @@ function taskRefreshReducer (state) {
 }
 
 function workingAreaWordDroppedReducer (state, {payload: {word, coordinates}}) {
-  console.log({word, coordinates});
   return state;
 }
 

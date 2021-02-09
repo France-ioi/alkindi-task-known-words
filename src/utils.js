@@ -108,13 +108,17 @@ export function applySubstitutionToText (substitution, currentCipherText, alphab
   });
 }
 
+export function padArray (arr, len, fill) {
+  return arr.concat(Array(len).fill(fill)).slice(0, len);
+}
+
 export function applyTranspositionToWords (transposition, words) {
   return words.map(word => {
-    const letters = word.padEnd(transposition.length).split('');
+    const letters = padArray(word, transposition.length, '');
     return letters.map((letter, index) => {
       return transposition[index] < word.length ? letters[transposition[index]] : '';
-    }).join('');
-  }).join(' ');
+    }).filter(letter => '' !== letter);
+  });
 }
 
 export function memoize (fn) {

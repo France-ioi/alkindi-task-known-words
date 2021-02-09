@@ -117,7 +117,7 @@ class Workspace extends React.PureComponent {
           }
           {this.props.version.frequencyAnalysis !== false &&
             <div className="main-block">
-              <Collapsable title={<div className="main-block-header">{"Analyse de fréquence"}</div>}>
+              <Collapsable title={<div className="main-block-header" style={{zIndex: 8}}>{"Analyse de fréquence"}</div>}>
                 <div style={{marginTop: '20px'}}>
                   <FrequencyAnalysis />
                 </div>
