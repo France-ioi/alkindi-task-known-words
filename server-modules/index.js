@@ -169,8 +169,22 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
   if (correctLines === clearTextLines.length) {
     const hintsCost = (hints1Count * 1) + (hints2Count * 10);
     score = Math.max(0, 100 - hintsCost);
-    message = `Bravo, vous avez bien déchiffré le texte. ${false !== version.hints ? `Vous avez demandé la valeur de ${hints1Count} lettre${hints1Count > 1 ? "s" : ""}
-      et de ${hints2Count} ligne${hints2Count > 1 ? "s" : ""} en indice, ce qui vous a coûté ${hintsCost} points.` : ''}`;
+    message = "Bravo, vous avez bien déchiffré le texte. ";
+    if (false !== version.hints) {
+      if (!hintsCost) {
+        message += "Vous n'avez pas demandé d'indice.";
+      } else {
+        const asked = [];
+        if (hints1Count) {
+          asked.push(`${hints1Count} lettre${hints1Count > 1 ? "s" : ""}`);
+        }
+        if (hints2Count) {
+          asked.push(`${hints2Count} ligne${hints2Count > 1 ? "s" : ""}`);
+        }
+
+        message += `Vous avez demandé la valeur de ${asked.join(' et ')} en indice, ce qui vous a coûté ${hintsCost} point${hintsCost > 1 ? 's' : ''}.`;
+      }
+    }
   } else {
     score = 0;
     if (hasIncorrectLines) {
