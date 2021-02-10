@@ -56,7 +56,7 @@ export default DragLayer(monitor => {
             transform: `translate(${offset && offset.x ? offset.x : 0}px, ${offset && offset.y ? offset.y : 0}px)`,
           }}
         >
-          <div id="custom-drag-layer">
+          <div id="custom-drag-layer" className="custom-drag-layer">
             {'word' === this.props.componentType ? <DraggableWord
               wordIndex={wordIndex}
               word={word}

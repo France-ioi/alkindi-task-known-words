@@ -585,6 +585,7 @@
   font-size: 18px;
   cursor: move;
   height: 24px;
+  background: #fff;
 }
 .draggable-word-handle {
   background-color: #88BB88;
@@ -633,7 +634,6 @@
 .draggable-ciphered-word {
   height: initial;
   align-items: stretch;
-  background: #fff;
   border-radius: 4px;
   .draggable-word-value {
     display: block;
@@ -661,7 +661,7 @@
     }
   }
 }
-.droppable-word-container .draggable-word {
+.droppable-word-container .draggable-word, .custom-drag-layer .draggable-word {
   margin: 0;
   padding: 0;
   height: initial;
