@@ -5,7 +5,6 @@ import {getEmptyImage} from 'react-dnd-html5-backend';
 function getStyles (isDragging) {
   return {
     opacity: isDragging ? 0 : 1,
-    marginBottom: '2px',
   };
 }
 

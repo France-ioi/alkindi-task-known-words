@@ -350,12 +350,13 @@ function decipheredCellCharChangedReducer (state, {payload: {rowIndex, position,
 function decipheredWorkingAreaWordDroppedReducer (state, {payload: {item, coordinates}}) {
   const {decipheredText: {workingAreaWords}} = state;
   const identifier = item.type + '-' + item.id;
+  const gridCellWidth = 22; // px
   const snappedCoordinates = {
-    x: Math.round(coordinates.x / 10) * 10,
-    y: Math.round(coordinates.y  / 10) * 10,
+    x: Math.round(coordinates.x / gridCellWidth) * gridCellWidth,
+    y: Math.round(coordinates.y  / gridCellWidth) * gridCellWidth,
   };
 
-  if (snappedCoordinates.x < 0 || snappedCoordinates.x + (14 + 21 * (item.lettersCount + 1)) > 770 || snappedCoordinates.y < 0 || snappedCoordinates.y > 220) {
+  if (snappedCoordinates.x < 0 || snappedCoordinates.x + (21 * (item.lettersCount + 1)) > 770 || snappedCoordinates.y < 0 || snappedCoordinates.y > 220) {
     return state;
   }
 
@@ -364,15 +365,15 @@ function decipheredWorkingAreaWordDroppedReducer (state, {payload: {item, coordi
       continue;
     }
 
-    const selfWidth = 14 + 21 * (item.lettersCount + 1);
-    const otherWidth = 14 + 21 * (lettersCount + 1);
+    const selfWidth = 21 * (item.lettersCount + 1);
+    const otherWidth = 21 * (lettersCount + 1);
     const selfHeight = 'ciphered-word' === item.type ? 40 : 20;
     const otherHeight = 'ciphered-word' === type ? 40 : 20;
 
-    const overlap = !(snappedCoordinates.x + selfWidth < otherCoordinates.x ||
-      snappedCoordinates.x > otherCoordinates.x + otherWidth ||
-      snappedCoordinates.y + selfHeight < otherCoordinates.y ||
-      snappedCoordinates.y > otherCoordinates.y + otherHeight);
+    const overlap = !(snappedCoordinates.x + selfWidth <= otherCoordinates.x ||
+      snappedCoordinates.x >= otherCoordinates.x + otherWidth ||
+      snappedCoordinates.y + selfHeight <= otherCoordinates.y ||
+      snappedCoordinates.y >= otherCoordinates.y + otherHeight);
 
     if (overlap) {
       return state;

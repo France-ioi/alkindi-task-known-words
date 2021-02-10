@@ -6,7 +6,6 @@ import {range} from 'range';
 function getStyles (isDragging) {
   return {
     opacity: isDragging ? 0 : 1,
-    marginBottom: '2px',
   };
 }
 

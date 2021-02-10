@@ -654,6 +654,11 @@
     }
   }
 }
+.droppable-word-container .draggable-word {
+  margin: 0;
+  padding: 0;
+  height: initial;
+}
 
 .custom-scrollable {
   border: none;
