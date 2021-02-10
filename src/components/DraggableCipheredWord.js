@@ -9,8 +9,10 @@ function getStyles (isDragging) {
   };
 }
 
-export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemoved}) => {
+export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemoved, draggingWord}) => {
   const ref = useRef(null);
+
+  const isActive = draggingWord && draggingWord.length === content.length;
 
   const [{isDragging}, drag, preview] = useDrag({
     item: {type: 'ciphered-word', rowIndex, wordIndex, content, lettersCount: content.length, id: rowIndex + '-' + wordIndex},
@@ -34,7 +36,7 @@ export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemov
   return (
     <div
       ref={ref}
-      className={`draggable-word draggable-ciphered-word letter-cell`}
+      className={`draggable-word draggable-ciphered-word letter-cell ${isActive ? 'draggable-ciphered-word-matching' : ''}`}
       style={getStyles(isDragging)}
     >
       <div className="draggable-word-handle">

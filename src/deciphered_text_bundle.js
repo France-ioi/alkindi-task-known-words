@@ -720,6 +720,7 @@ class DecipheredTextView extends React.PureComponent {
                           wordIndex={item.wordIndex}
                           content={wordSlotsByRow[item.rowIndex][item.wordIndex].content}
                           onWordRemoved={this.onWordRemovedWorkingArea}
+                          draggingWord={clearWords[selectedWord]}
                         /> : null}
                       </div>
                     )}
@@ -756,6 +757,7 @@ class DecipheredTextView extends React.PureComponent {
                                 content={content}
                                 rowIndex={rowIndex}
                                 wordIndex={resultIndex}
+                                draggingWord={clearWords[selectedWord]}
                               />
                             </div>
                           )}

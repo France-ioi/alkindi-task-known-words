@@ -624,7 +624,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
 }
 .draggable-word.is-selected .draggable-word-letter {
   background-color: #88BB88;
@@ -651,6 +650,12 @@
         color: #30242B;
         opacity: 0.35;
       }
+    }
+  }
+  &.draggable-ciphered-word-matching .draggable-word-symbols {
+    background-color: #88BB88;
+    .draggable-word-letter {
+      color: #fff;
     }
   }
 }
