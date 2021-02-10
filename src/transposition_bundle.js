@@ -88,7 +88,7 @@ class TranspositionBundleView extends React.PureComponent {
           </div>
           <div className="original">
             {range(0, longestWordLength).map(i =>
-              <div className="transposition-letter original-letter letter-cell" key={i}>
+              <div className={`transposition-letter original-letter letter-cell ${exampleWord && i < exampleWord.length && exampleWord[i].substitutionResultLocked ? 'is-locked' : ''}`} key={i}>
                 {exampleWord && i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
               </div>
             )}
@@ -116,6 +116,7 @@ class TranspositionBundleView extends React.PureComponent {
               <DraggableTranspositionLetter
                 key={transposition[i]}
                 index={i}
+                locked={exampleWord && transposition[i] < exampleWord.length && exampleWord[transposition[i]].substitutionResultLocked}
                 letter={exampleWord && transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
                 moveLetter={this.moveLetter}
               />

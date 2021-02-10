@@ -1,7 +1,7 @@
 import React, {useRef} from 'react';
 import {useDrag, useDrop} from 'react-dnd';
 
-export const DraggableTranspositionLetter = ({letter, index, moveLetter}) => {
+export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}) => {
   const ref = useRef(null);
 
   const [{canDrop, isOver}, drop] = useDrop({
@@ -36,7 +36,7 @@ export const DraggableTranspositionLetter = ({letter, index, moveLetter}) => {
 
   return (
     <div ref={ref} className="transposition-slot" style={{opacity}}>
-      <div className={`transposition-letter letter-cell ${isActive ? 'substitution-letter-hover' : ''}`}>
+      <div className={`transposition-letter letter-cell ${isActive ? 'substitution-letter-hover' : ''} ${locked ? 'is-locked' : ''}`}>
         <span>{letter}</span>
       </div>
     </div>

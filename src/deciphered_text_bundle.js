@@ -134,6 +134,7 @@ function applyRefreshedData (state) {
     let substitutionResult = applySubstitutionToText(substitution, currentCipherText, alphabet, symbolsLocked);
     for (let i = 0; i < substitutionResult.length; i++) {
       deciphered[i].substitutionResult = substitutionResult[i].value;
+      deciphered[i].substitutionResultLocked = substitutionResult[i].locked;
     }
 
     let finalResult = substitutionResult;

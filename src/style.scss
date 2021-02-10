@@ -730,6 +730,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    &.is-locked {
+      background-color: #CECDCD;
+    }
   }
 
   .symbols {
