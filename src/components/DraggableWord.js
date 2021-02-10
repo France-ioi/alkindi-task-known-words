@@ -9,18 +9,23 @@ function getStyles (isDragging) {
   };
 }
 
-export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, innerRef, onWordSelected, selected}) => {
+export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStart, onDragEnd, wordSlotsByRow, innerRef, onWordSelected, selected, onWordRemoved}) => {
   const ref = innerRef ? innerRef : useRef(null);
 
   const [{isDragging}, drag, preview] = useDrag({
-    item: {type: 'word', word, wordIndex},
+    item: {type: 'word', word, wordIndex, lettersCount: word.length, id: wordIndex},
     begin () {
       onDragStart(word);
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: () => {
+    end: (item, monitor) => {
+      if (monitor.didDrop()) {
+        onDragEnd();
+        return;
+      }
+
       const scrollableContainer = document.getElementById('deciphered-scrollable');
       const dragLayerRef = document.getElementById('custom-drag-layer');
       const itemPosition = dragLayerRef.getBoundingClientRect();
@@ -52,7 +57,11 @@ export const DraggableWord = ({word, wordIndex, minimal, onWordMoved, onDragStar
 
       if (!possibleWords.length) {
         onDragEnd();
-        onWordMoved(wordIndex, null, null);
+        if (onWordRemoved) {
+          onWordRemoved(item);
+        } else {
+          onWordMoved(wordIndex, null, null);
+        }
         return;
       }
 

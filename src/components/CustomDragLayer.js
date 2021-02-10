@@ -1,6 +1,7 @@
 import React from 'react';
 import {DragLayer} from 'react-dnd';
 import {DraggableWord} from "./DraggableWord";
+import {DraggableCipheredWord} from "./DraggableCipheredWord";
 
 let subscribedToOffsetChange = false;
 let dragPreviewRef = null;
@@ -34,13 +35,13 @@ export default DragLayer(monitor => {
       dragPreviewRef = this.rootNode;
     }
     render () {
-      if (!this.props.beingDragged || this.props.componentType !== 'word') {
+      if (!this.props.beingDragged || -1 === ['word', 'ciphered-word'].indexOf(this.props.componentType)) {
         return null;
       }
 
       const offset = this.props.monitor.getSourceClientOffset();
 
-      const {wordIndex, word} = this.props.itemBeingDragged;
+      const {wordIndex, rowIndex, word, content} = this.props.itemBeingDragged;
       return (
         <div
           role="presentation"
@@ -56,11 +57,16 @@ export default DragLayer(monitor => {
           }}
         >
           <div id="custom-drag-layer">
-            <DraggableWord
+            {'word' === this.props.componentType ? <DraggableWord
               wordIndex={wordIndex}
               word={word}
               onWordMoved={() => {}}
-            />
+            /> : null}
+            {'ciphered-word' === this.props.componentType ? <DraggableCipheredWord
+              rowIndex={rowIndex}
+              wordIndex={wordIndex}
+              content={content}
+            /> : null}
           </div>
         </div>
       );

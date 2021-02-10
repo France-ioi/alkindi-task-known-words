@@ -9,17 +9,22 @@ import {DraggableWord} from "./components/DraggableWord";
 import {DroppableWordSlot} from "./components/DroppableWordSlot";
 import {Collapsable} from '@france-ioi/react-task-lib';
 import Tutorial from "./components/Tutorial";
+import {DroppableWordContainer} from "./components/DroppableWordContainer";
+import {DraggableCipheredWord} from "./components/DraggableCipheredWord";
 
 const cellWidth = 22; // px
 const cellHeight = 24; // px
 const pageRows = 4;
 const height = 370;
+const heightWords = 210;
+const wordsRowHeight = 60; // px
 
 function appInitReducer (state, _action) {
   return {
     ...state,
     decipheredText: {
       scrollTop: 0,
+      scrollTopWords: 0,
     },
   };
 }
@@ -36,6 +41,7 @@ function taskInitReducer (state) {
     placedWords: {},
     selectedWord: null,
     selectedDecipheredWord: null,
+    workingAreaWords: {},
   };
 
   let newState = {...state, decipheredText, editingDecipher: null};
@@ -71,6 +77,13 @@ function decipheredTextResizedReducer (state, {payload: {width}}) {
 function decipheredTextScrolledReducer (state, {payload: {scrollTop}}) {
   let {decipheredText} = state;
   decipheredText = {...decipheredText, scrollTop};
+
+  return {...state, decipheredText};
+}
+
+function decipheredTextScrolledWordsReducer (state, {payload: {scrollTop}}) {
+  let {decipheredText} = state;
+  decipheredText = {...decipheredText, scrollTopWords: scrollTop};
 
   return {...state, decipheredText};
 }
@@ -334,6 +347,57 @@ function decipheredCellCharChangedReducer (state, {payload: {rowIndex, position,
   return applyRefreshedData(newState);
 }
 
+function decipheredWorkingAreaWordDroppedReducer (state, {payload: {item, coordinates}}) {
+  const {decipheredText: {workingAreaWords}} = state;
+  const identifier = item.type + '-' + item.id;
+  const snappedCoordinates = {
+    x: Math.round(coordinates.x / 10) * 10,
+    y: Math.round(coordinates.y  / 10) * 10,
+  };
+
+  if (snappedCoordinates.x < 0 || snappedCoordinates.x + (14 + 21 * (item.lettersCount + 1)) > 770 || snappedCoordinates.y < 0 || snappedCoordinates.y > 220) {
+    return state;
+  }
+
+  for (let [id, {item: {type, lettersCount}, coordinates: otherCoordinates}] of Object.entries(workingAreaWords)) {
+    if (id === identifier) {
+      continue;
+    }
+
+    const selfWidth = 14 + 21 * (item.lettersCount + 1);
+    const otherWidth = 14 + 21 * (lettersCount + 1);
+    const selfHeight = 'ciphered-word' === item.type ? 40 : 20;
+    const otherHeight = 'ciphered-word' === type ? 40 : 20;
+
+    const overlap = !(snappedCoordinates.x + selfWidth < otherCoordinates.x ||
+      snappedCoordinates.x > otherCoordinates.x + otherWidth ||
+      snappedCoordinates.y + selfHeight < otherCoordinates.y ||
+      snappedCoordinates.y > otherCoordinates.y + otherHeight);
+
+    if (overlap) {
+      return state;
+    }
+  }
+
+  if (identifier in workingAreaWords) {
+    // remove ?
+    return update(state, {decipheredText: {workingAreaWords: {[identifier]: {$set: {item, coordinates: snappedCoordinates}}}}});
+  } else {
+    return update(state, {decipheredText: {workingAreaWords: {[identifier]: {$set: {item, coordinates: snappedCoordinates}}}}});
+  }
+}
+
+function decipheredWorkingAreaWordRemovedReducer (state, {payload: {item}}) {
+  const {decipheredText: {workingAreaWords}} = state;
+  const identifier = item.type + '-' + item.id;
+
+  if (identifier in workingAreaWords) {
+    return update(state, {decipheredText: {workingAreaWords: {$unset: [identifier]}}});
+  }
+
+  return state;
+}
+
 function DecipheredTextViewSelector (state) {
   const {actions, decipheredText, editingDecipher, taskData: {version, clearWords}} = state;
   const {
@@ -342,12 +406,15 @@ function DecipheredTextViewSelector (state) {
     decipheredCellCharChanged,
     decipheredTextResized,
     decipheredTextScrolled,
+    decipheredTextScrolledWords,
     decipheredCellEditMoved,
     decipheredWordMoved,
     decipheredWordSelected,
     decipheredDecipheredWordSelected,
+    decipheredWorkingAreaWordDropped,
+    decipheredWorkingAreaWordRemoved,
   } = actions;
-  const {width, scrollTop, lines, pageColumns, placedWords, selectedWord, selectedDecipheredWord} = decipheredText;
+  const {width, scrollTop, scrollTopWords, lines, pageColumns, placedWords, selectedWord, selectedDecipheredWord, workingAreaWords} = decipheredText;
 
   return {
     decipheredCellEditStarted,
@@ -359,8 +426,12 @@ function DecipheredTextViewSelector (state) {
     decipheredDecipheredWordSelected,
     decipheredTextResized,
     decipheredTextScrolled,
+    decipheredTextScrolledWords,
+    decipheredWorkingAreaWordDropped,
+    decipheredWorkingAreaWordRemoved,
 
-    version, editingDecipher, width, scrollTop, lines, pageColumns, clearWords, placedWords, selectedWord, selectedDecipheredWord,
+    version, editingDecipher, width, scrollTop, scrollTopWords, lines, pageColumns, clearWords,
+    placedWords, selectedWord, selectedDecipheredWord, workingAreaWords,
   };
 }
 
@@ -370,7 +441,7 @@ class DecipheredTextView extends React.PureComponent {
     this.state = {dragElement: null};
   }
   render () {
-    const {pageColumns, scrollTop, lines, editingDecipher, version, clearWords, placedWords, selectedWord, selectedDecipheredWord} = this.props;
+    const {pageColumns, scrollTop, scrollTopWords, lines, editingDecipher, version, clearWords, placedWords, selectedWord, selectedDecipheredWord, workingAreaWords} = this.props;
     const rowsCount = lines.length;
     const linesHeight = [];
 
@@ -391,6 +462,10 @@ class DecipheredTextView extends React.PureComponent {
     const lastRow = Math.min(firstRow + pageRows + 2, rowsCount);
     const visibleRows = range(firstRow, lastRow);
 
+    const firstRowWords = Math.floor(scrollTopWords / wordsRowHeight);
+    const lastRowWords = Math.min(firstRowWords + pageRows + 2, rowsCount);
+    const visibleRowsWords = range(firstRowWords, lastRowWords);
+
     let wordsByRow = {};
     for (let wordIndex of Object.keys(placedWords)) {
       const {rowIndex, position} = placedWords[wordIndex];
@@ -410,6 +485,7 @@ class DecipheredTextView extends React.PureComponent {
           position: currentPosition,
           letters: word.length,
           wordSlotId: 'word-slot-' + wordSlotId,
+          content: line.deciphered.slice(currentPosition, currentPosition + word.length),
         });
         currentPosition += word.length + 1;
         wordSlotId++;
@@ -612,6 +688,85 @@ class DecipheredTextView extends React.PureComponent {
             </div>
           </Collapsable>
         </div>
+        {version.workingArea !== false &&
+          <div className="main-block">
+            <Collapsable title={<div className="main-block-header">{"Plan de travail"}</div>}>
+              <div>
+                <div className="working-area">
+                  <DroppableWordContainer
+                    onDropWord={this.onDropWordWorkingArea}
+                  >
+                    {Object.entries(workingAreaWords).map(([key, {item, coordinates}]) =>
+                      <div
+                        key={key}
+                        style={{position: 'absolute', left: coordinates.x, top: coordinates.y}}
+                      >
+                        {'word' === item.type ? <DraggableWord
+                          key={key}
+                          wordIndex={item.wordIndex}
+                          wordSlotsByRow={wordSlotsByRow}
+                          word={clearWords[item.wordIndex]}
+                          selected={item.wordIndex === selectedWord}
+                          onWordSelected={this.onWordSelected}
+                          onWordMoved={this.onWordMoved}
+                          onDragStart={(item) => this.setDragElement(item)}
+                          onDragEnd={() => this.setDragElement(null)}
+                          onWordRemoved={this.onWordRemovedWorkingArea}
+                        /> : null}
+                        {'ciphered-word' === item.type ? <DraggableCipheredWord
+                          key={key}
+                          rowIndex={item.rowIndex}
+                          wordIndex={item.wordIndex}
+                          content={wordSlotsByRow[item.rowIndex][item.wordIndex].content}
+                          onWordRemoved={this.onWordRemovedWorkingArea}
+                        /> : null}
+                      </div>
+                    )}
+                  </DroppableWordContainer>
+                </div>
+
+                <hr/>
+
+                <div className="working-area-words">
+                  <div>Mots du chiffré</div>
+                  <div
+                    id="deciphered-words-scrollable"
+                    ref={this.refTextBoxWords}
+                    onScroll={this.onScrollWords}
+                    className="custom-scrollable"
+                    style={{position: 'relative', width: '100%', height: heightWords && `${heightWords}px`, overflowY: 'auto', overflowX: 'hidden', background: 'white'}}
+                  >
+                    {(visibleRowsWords || []).map((rowIndex) =>
+                      <div
+                        key={rowIndex}
+                        className="deciphered-words-line is-bordered"
+                        style={{position: 'absolute', top: `${wordsRowHeight * rowIndex}px`, width: '100%', height: `${wordsRowHeight}px`}}
+                      >
+                        <div>
+                          {wordSlotsByRow[rowIndex].map(({position, content}, resultIndex) =>
+                            <div
+                              key={resultIndex}
+                              className={`
+                                droppable-word-container
+                              `}
+                              style={{position: 'absolute', left: `${position * cellWidth + (6 * resultIndex)}px`, top: '4px'}}
+                            >
+                              <DraggableCipheredWord
+                                content={content}
+                                rowIndex={rowIndex}
+                                wordIndex={resultIndex}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>)}
+                    <div style={{position: 'absolute', top: `${wordsRowHeight * lines.length - 1}px`, width: '1px', height: '1px'}} />
+                  </div>
+                </div>
+              </div>
+            </Collapsable>
+          </div>
+        }
       </div>
     );
   }
@@ -620,6 +775,9 @@ class DecipheredTextView extends React.PureComponent {
     const width = element.clientWidth;
     const height = element.clientHeight;
     this.props.dispatch({type: this.props.decipheredTextResized, payload: {width, height}});
+  };
+  refTextBoxWords = (element) => {
+    this._textBoxWords = element;
   };
   setDragElement = (item) => {
     this.setState({
@@ -630,8 +788,18 @@ class DecipheredTextView extends React.PureComponent {
     const scrollTop = this._textBox.scrollTop;
     this.props.dispatch({type: this.props.decipheredTextScrolled, payload: {scrollTop}});
   };
+  onScrollWords = () => {
+    if (!this._textBoxWords) {
+      return;
+    }
+    const scrollTop = this._textBoxWords.scrollTop;
+    this.props.dispatch({type: this.props.decipheredTextScrolledWords, payload: {scrollTop}});
+  };
   componentDidUpdate () {
     this._textBox.scrollTop = this.props.scrollTop;
+    if (this._textBoxWords) {
+      this._textBoxWords.scrollTop = this.props.scrollTopWords;
+    }
   }
   onEditingStarted = (rowIndex, position) => {
     this.props.dispatch({type: this.props.decipheredCellEditStarted, payload: {rowIndex, position}});
@@ -655,12 +823,19 @@ class DecipheredTextView extends React.PureComponent {
   selectDecipheredWord = (rowIndex, wordIndex) => {
     this.props.dispatch({type: this.props.decipheredDecipheredWordSelected, payload: {rowIndex, wordIndex}});
   };
+  onDropWordWorkingArea = (item, coordinates) => {
+    this.props.dispatch({type: this.props.decipheredWorkingAreaWordDropped, payload: {item, coordinates}});
+  };
+  onWordRemovedWorkingArea = (item) => {
+    this.props.dispatch({type: this.props.decipheredWorkingAreaWordRemoved, payload: {item}});
+  };
 }
 
 export default {
   actions: {
     decipheredTextResized: 'DecipheredText.Resized' /* {width: number, height: number} */,
     decipheredTextScrolled: 'DecipheredText.Scrolled' /* {scrollTop: number} */,
+    decipheredTextScrolledWords: 'DecipheredText.Scrolled.Words' /* {scrollTop: number} */,
     decipheredCellEditStarted: 'DecipheredText.Cell.Edit.Started',
     decipheredCellEditCancelled: 'DecipheredText.Cell.Edit.Cancelled',
     decipheredCellCharChanged: 'DecipheredText.Cell.Char.Changed',
@@ -668,6 +843,8 @@ export default {
     decipheredWordMoved: 'DecipheredText.Word.Moved',
     decipheredWordSelected: 'DecipheredText.Word.Selected',
     decipheredDecipheredWordSelected: 'DecipheredText.DecipheredWord.Selected',
+    decipheredWorkingAreaWordDropped: 'DecipheredText.WorkingArea.Word.Dropped',
+    decipheredWorkingAreaWordRemoved: 'DecipheredText.WorkingArea.Word.Removed',
   },
   actionReducers: {
     appInit: appInitReducer,
@@ -675,6 +852,7 @@ export default {
     taskRefresh: taskRefreshReducer,
     decipheredTextResized: decipheredTextResizedReducer,
     decipheredTextScrolled: decipheredTextScrolledReducer,
+    decipheredTextScrolledWords: decipheredTextScrolledWordsReducer,
     decipheredCellEditStarted: decipheredCellEditStartedReducer,
     decipheredCellEditCancelled: decipheredCellEditCancelledReducer,
     decipheredCellCharChanged: decipheredCellCharChangedReducer,
@@ -682,6 +860,8 @@ export default {
     decipheredWordMoved: decipheredWordMovedReducer,
     decipheredWordSelected: decipheredWordSelectedReducer,
     decipheredDecipheredWordSelected: decipheredDecipheredWordSelectedReducer,
+    decipheredWorkingAreaWordDropped: decipheredWorkingAreaWordDroppedReducer,
+    decipheredWorkingAreaWordRemoved: decipheredWorkingAreaWordRemovedReducer,
   },
   lateReducer: decipheredTextLateReducer,
   saga: function* () {

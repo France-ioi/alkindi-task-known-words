@@ -11,19 +11,19 @@ import Tutorial from "./components/Tutorial";
 function WorkspaceSelector (state) {
   const {
     taskData: {version, frequencyAnalysis},
-    views: {CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, WorkingArea},
+    views: {CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints},
   } = state;
 
   return {
     version, frequencyAnalysis,
-    CipheredText, FrequencyAnalysis, Substitution, DecipheredText, HintRequestFeedback, Hints, Transposition, WorkingArea,
+    CipheredText, FrequencyAnalysis, Substitution, DecipheredText, HintRequestFeedback, Hints, Transposition,
   };
 }
 
 class Workspace extends React.PureComponent {
   render () {
     const {
-      CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, WorkingArea, version,
+      CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, version,
     } = this.props;
     return (
       <div>
@@ -95,16 +95,7 @@ class Workspace extends React.PureComponent {
               <CipheredText />
             </Collapsable>
           </div>
-          <DecipheredText />
-          {/*{this.props.version.workingArea !== false &&*/}
-          {/*<div className="main-block">*/}
-          {/*  <Collapsable title={<div className="main-block-header">{"Plan de travail"}</div>}>*/}
-          {/*    <div>*/}
-          {/*      <WorkingArea/>*/}
-          {/*    </div>*/}
-          {/*  </Collapsable>*/}
-          {/*</div>*/}
-          {/*}*/}
+          <DecipheredText/>
           {this.props.version.hints !== false &&
             <div className="main-block hints">
               <Collapsable title={<div className="main-block-header">{"Indices"}</div>}>

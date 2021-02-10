@@ -3,17 +3,17 @@ import {useDrop} from "react-dnd";
 
 export const DroppableWordContainer = ({
   onDropWord,
+  children,
 }) => {
   const ref = useRef(null);
 
-  const [{canDrop, isOver}, drop] = useDrop({
-    accept: ['word'],
+  const [, drop] = useDrop({
+    accept: ['word', 'ciphered-word'],
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
     }),
     drop: (item, monitor) => {
-      console.log('item');
       const offset = monitor.getSourceClientOffset();
       if (offset && ref.current) {
         const dropTargetXy = ref.current.getBoundingClientRect();
@@ -30,9 +30,7 @@ export const DroppableWordContainer = ({
 
   return (
     <div ref={ref} className={`droppable-word-container`}>
-      {/*{range(0, letters).map((letter, letterIndex) =>*/}
-      {/*  <div className={`droppable-word-letter ${occupied && !occupied[position + letterIndex] ? 'droppable-word-letter-occupied' : ''}`} key={letterIndex}/>*/}
-      {/*)}*/}
+      {children}
     </div>
   );
 };

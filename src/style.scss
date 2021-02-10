@@ -590,6 +590,7 @@
   background-color: #88BB88;
   border-radius: 5px 0px 0px 5px;
   display: flex;
+  align-items: center;
   justify-content: center;
   width: 20px;
 }
@@ -603,11 +604,21 @@
 .draggable-word-value {
   display: flex;
 }
+.draggable-word-symbols {
+  border: solid 1px #999;
+  border-left: none;
+  padding-right: -5px;
+  display: flex;
+}
+.draggable-word-result {
+  display: flex;
+}
 .draggable-word-letter {
   width: 20px;
   height: 20px;
   min-width: 22px;
   font-size: 18px;
+  line-height: 18px;
   color: #30242B;
   border: solid 1px #999;
   display: flex;
@@ -618,6 +629,30 @@
 .draggable-word.is-selected .draggable-word-letter {
   background-color: #88BB88;
   color: #fff;
+}
+
+.draggable-ciphered-word {
+  height: initial;
+  align-items: stretch;
+  .draggable-word-value {
+    display: block;
+    .draggable-word-symbols .draggable-word-letter {
+      border: none;
+      &:last-child {
+        min-width: 21px;
+      }
+    }
+    .draggable-word-result .draggable-word-letter {
+      &.is-hint {
+        background-color: #88BB88;
+        color: #fff;
+      }
+      &.is-ciphered {
+        color: #30242B;
+        opacity: 0.35;
+      }
+    }
+  }
 }
 
 .custom-scrollable {
@@ -727,9 +762,24 @@
 
 .working-area {
   height: 250px;
-  padding: 20px;
+  position: relative;
   .droppable-word-container {
     width: 100%;
     height: 100%;
+  }
+}
+
+.working-area-words {
+  display: flex;
+  > div:first-child {
+    padding: 0 10px 10px 10px;
+    max-width: 85px;
+    justify-content: flex-end;
+    color: #979797;
+    text-align: right;
+  }
+
+  .deciphered-words-line {
+    padding: 0;
   }
 }
