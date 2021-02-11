@@ -22,7 +22,6 @@ const versions = {
     symbolsPerLine: 27,
     extractedWordsCount: 40,
     symbolsPerLetterMax: 1,
-    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
 
   1: {
@@ -32,7 +31,6 @@ const versions = {
     extractedWordsCount: 40,
     symbolsCountToUse: 35,
     symbolsPerLetterMax: 3,
-    explanation: 'Bienvenue sur ce sujet 2 ! Il est en cours de création',
   },
 
   '2.1': {
@@ -51,7 +49,6 @@ const versions = {
     clearTextLine: false,
     transposition: false,
     workingArea: false,
-    explanation: "Un message a été chiffré par une substitution : chaque lettre est remplacée par un symbole. On connaît une liste de mots qui sont présents dans le message. Retrouvez l'intégralité du message. Vous pouvez glisser les mots connus dans la zone de déchiffrement. Un outil vous permet d'éditer la substitution de déchiffrement.",
   },
   '2.2': {
     version: '2.2',
@@ -69,7 +66,6 @@ const versions = {
     clearTextLine: false,
     transposition: false,
     workingArea: false,
-    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (un à deux symboles par lettre).',
   },
   '2.3': {
     version: '2.3',
@@ -86,7 +82,24 @@ const versions = {
     clearTextLine: false,
     transposition: false,
     workingArea: false,
-    explanation: 'Dans ce sujet, la substitution est poly-alphabétique (chaque lettre peut correspondre à 1 à 3 symboles).',
+  },
+  '3.1': {
+    version: '3.1',
+    clearTextLength: 400,
+    symbolsPerLine: 27,
+    extractedWordsCount: 40,
+    symbolsCountToUse: 33,
+    symbolsPerLetterMax: 3,
+    transposition: false,
+  },
+  '3.2': {
+    version: '3.2',
+    clearTextLength: 400,
+    symbolsPerLine: 27,
+    extractedWordsCount: 10,
+    symbolsCountToUse: 33,
+    symbolsPerLetterMax: 3,
+    transposition: true,
   },
 };
 
@@ -208,10 +221,16 @@ function generateTaskData (task) {
   const rng0 = seedrandom(randomSeed ? randomSeed : task.random_seed + 16);
 
   const symbolsToUse = new Array(alphabet.length).fill(1);
-  for (let i = 0; i < (symbolsCountToUse - alphabet.length); i++) {
+  symbolsToUse[4] = 2; // E >= 2
+  const secondFrequencyLetters = [0, 18, 8, 19]; // A, S, I, T >= 2
+  const secondFrequencyLetter = secondFrequencyLetters[Math.floor(rng0() * secondFrequencyLetters.length)];
+  symbolsToUse[secondFrequencyLetter] = 2;
+
+  const symbolsUsedCount = symbolsToUse.reduce((agg, next) => agg + next, 0);
+  for (let i = 0; i < (symbolsCountToUse - symbolsUsedCount); i++) {
     while (true) {
       const letter = Math.floor(rng0() * alphabet.length);
-      if (symbolsToUse[letter] < symbolsPerLetterMax) {
+      if (symbolsToUse[letter] < symbolsPerLetterMax && (-1 === secondFrequencyLetters.indexOf(letter) || letter === secondFrequencyLetter)) {
         symbolsToUse[letter]++;
         break;
       }
@@ -233,7 +252,21 @@ function generateTaskData (task) {
   if (clearMessage && clearMessage.length) {
     clearText = clearMessage;
   } else {
-    clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
+    while (true) {
+      clearText = generate(rng0, clearTextLength, clearTextLength + 100, true).trim();
+      const words = clearText.split(' ');
+      const wordLengths = words.map(word => word.length);
+      let wordsByLength = {};
+      for (let length of wordLengths) {
+        if (!(length in wordsByLength)) {
+          wordsByLength[length] = 0;
+        }
+        wordsByLength[length]++;
+      }
+      if ('3.1' !== version || (wordsByLength[5] >= 7 && wordsByLength[5] <= 9)) {
+        break;
+      }
+    }
   }
 
   const words = clearText.split(' ');
@@ -248,7 +281,7 @@ function generateTaskData (task) {
 
   const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
 
-  const clearWords = clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, rng0);
+  const clearWords = clearMessageWords && clearMessageWords.length ? clearMessageWords : extractWords(clearText, extractedWordsCount, version, rng0);
   clearWords.sort();
 
   const frequencyAnalysis = computeFrequencyAnalysis(clearText);
@@ -357,11 +390,39 @@ function cutTextIntoLines (text, symbolsPerLine) {
   return lines;
 }
 
-function extractWords (text, wordsCount, rng0) {
+function extractWords (text, wordsCount, version, rng0) {
   const words = text.split(' ');
   const shuffledWords = shuffle({random: rng0, deck: words}).cards;
+  let wordsByLength = {};
+  let longestWordLength = 0;
+  for (let word of shuffledWords) {
+    if (!(word.length in wordsByLength)) {
+      wordsByLength[word.length] = [];
+    }
+    wordsByLength[word.length].push(word);
+    longestWordLength = Math.max(longestWordLength, word.length);
+  }
 
-  return shuffledWords.slice(0, wordsCount);
+  // console.log({wordsByLength, longestWordLength});
+
+  if ('3.1' === version) {
+    const allWords = wordsByLength[5];
+
+    return allWords.slice(0, allWords.length - 2);
+  } else if ('3.2' === version) {
+    let allWords = [];
+    for (let [length, words] of Object.entries(wordsByLength)) {
+      if (length >= 4 && words.length >= 3 && length <= longestWordLength - 4) {
+        allWords = [...allWords, ...words];
+      }
+    }
+
+    const shuffledAllWords = shuffle({random: rng0, deck: allWords}).cards;
+
+    return shuffledAllWords.slice(0, wordsCount);
+  } else {
+    return shuffledWords.slice(0, wordsCount);
+  }
 }
 
 function computeFrequencyAnalysis (clearText) {

@@ -132,13 +132,15 @@ class Workspace extends React.PureComponent {
               </div>
             </Collapsable>
           </div>
-          <div className="main-block">
-            <Collapsable
-              title={<div className="main-block-header">{"Transposition"}</div>}
-            >
-              <Transposition/>
-            </Collapsable>
-          </div>
+          {this.props.version.transposition &&
+            <div className="main-block">
+              <Collapsable
+                title={<div className="main-block-header">{"Transposition"}</div>}
+              >
+                <Transposition/>
+              </Collapsable>
+            </div>
+          }
         </DndProvider>
       </div>
     );
