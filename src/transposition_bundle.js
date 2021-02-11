@@ -3,19 +3,32 @@ import {connect} from 'react-redux';
 import {range} from 'range';
 import {DraggableTranspositionLetter} from "./components/DraggableTranspositionLetter";
 import update from 'immutability-helper';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 function taskInitReducer (state) {
   const {taskData: {longestWordLength}} = state;
 
+  const transposition = range(0, longestWordLength);
+
   return {
     ...state,
-    transposition: range(0, longestWordLength),
+    transposition,
+    transpositionHistory: [transposition],
+    transpositionHistoryPosition: 0,
     taskReady: true,
   };
 }
 
+function taskRefreshReducer (state) {
+  return {
+    ...state,
+    transpositionHistory: [state.transposition],
+    transpositionHistoryPosition: 0,
+  };
+}
+
 function transpositionLetterMovedReducer (state, {payload: {oldPosition, newPosition}}) {
-  const {transposition} = state;
+  const {transposition, transpositionHistory, transpositionHistoryPosition} = state;
   const previousLetter = transposition[oldPosition];
   const letterNewPosition = transposition[newPosition];
   const newTransposition = update(transposition, {
@@ -25,15 +38,47 @@ function transpositionLetterMovedReducer (state, {payload: {oldPosition, newPosi
     ],
   });
 
-  return {...state, transposition: newTransposition};
+  return {
+    ...state,
+    transposition: newTransposition,
+    transpositionHistory: [
+      ...transpositionHistory.slice(0, transpositionHistoryPosition + 1),
+      newTransposition,
+    ],
+    transpositionHistoryPosition: transpositionHistoryPosition + 1,
+  };
+}
+
+function transpositionUndoReducer (state) {
+  const {transpositionHistory, transpositionHistoryPosition} = state;
+
+  return {
+    ...state,
+    transposition: transpositionHistory[transpositionHistoryPosition - 1],
+    transpositionHistoryPosition: transpositionHistoryPosition - 1,
+  };
+}
+
+function transpositionRedoReducer (state) {
+  const {transpositionHistory, transpositionHistoryPosition} = state;
+
+  return {
+    ...state,
+    transposition: transpositionHistory[transpositionHistoryPosition + 1],
+    transpositionHistoryPosition: transpositionHistoryPosition + 1,
+  };
 }
 
 function TranspositionSelector (state) {
   const {
     actions: {
       transpositionLetterMoved,
+      transpositionUndo,
+      transpositionRedo,
     },
     transposition,
+    transpositionHistory,
+    transpositionHistoryPosition,
     decipheredText: {selectedDecipheredWord, lines},
     taskData: {longestWordLength},
   } = state;
@@ -48,16 +93,20 @@ function TranspositionSelector (state) {
 
   return {
     transposition,
+    transpositionHistory,
+    transpositionHistoryPosition,
     longestWordLength,
     exampleWord,
 
     transpositionLetterMoved,
+    transpositionUndo,
+    transpositionRedo,
   };
 }
 
 class TranspositionBundleView extends React.PureComponent {
   render () {
-    const {transposition, longestWordLength, exampleWord} = this.props;
+    const {transposition, transpositionHistory, transpositionHistoryPosition, longestWordLength, exampleWord} = this.props;
 
     const letterWidth = 20 + 4*2; // px
     const letterHeight = 20; // px
@@ -181,6 +230,12 @@ class TranspositionBundleView extends React.PureComponent {
             </div>
           </div>
         </div>}
+
+        <div className="transposition-controls">
+          <FontAwesomeIcon icon="undo" onClick={this.undo} className={transpositionHistoryPosition > 0 ? "is-visible" : ""}/>
+          <FontAwesomeIcon icon="redo" onClick={this.redo} className={transpositionHistoryPosition < transpositionHistory.length - 1 ? "is-visible" : ""}/>
+        </div>
+
         {!exampleWord && <p className="words-explanation">Sélectionnez un mot depuis l'outil "Déchiffrement" pour voir l'effet de la transposition sur ce mot.</p>}
       </div>
     );
@@ -189,15 +244,28 @@ class TranspositionBundleView extends React.PureComponent {
   moveLetter = (oldPosition, newPosition) => {
     this.props.dispatch({type: this.props.transpositionLetterMoved, payload: {oldPosition, newPosition}});
   };
+
+  undo = () => {
+    this.props.dispatch({type: this.props.transpositionUndo});
+  };
+
+  redo = () => {
+    this.props.dispatch({type: this.props.transpositionRedo});
+  };
 }
 
 export default {
   actions: {
     transpositionLetterMoved: 'Transposition.Letter.Moved',
+    transpositionUndo: 'Transposition.Undo',
+    transpositionRedo: 'Transposition.Redo',
   },
   actionReducers: {
     taskInit: taskInitReducer,
+    taskRefresh: taskRefreshReducer,
     transpositionLetterMoved: transpositionLetterMovedReducer,
+    transpositionUndo: transpositionUndoReducer,
+    transpositionRedo: transpositionRedoReducer,
   },
   views: {
     Transposition: connect(TranspositionSelector)(TranspositionBundleView)

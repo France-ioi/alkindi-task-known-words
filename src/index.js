@@ -18,7 +18,9 @@ import {faSpinner} from '@fortawesome/free-solid-svg-icons/faSpinner';
 import {faThumbtack} from '@fortawesome/free-solid-svg-icons/faThumbtack';
 import {faChevronUp} from '@fortawesome/free-solid-svg-icons/faChevronUp';
 import {faChevronDown} from '@fortawesome/free-solid-svg-icons/faChevronDown';
-library.add(faPlus, faStickyNote, faTimes, faCheck, faLock, faLockOpen, faSpinner, faThumbtack, faChevronUp, faChevronDown);
+import {faUndo} from '@fortawesome/free-solid-svg-icons/faUndo';
+import {faRedo} from '@fortawesome/free-solid-svg-icons/faRedo';
+library.add(faPlus, faStickyNote, faTimes, faCheck, faLock, faLockOpen, faSpinner, faThumbtack, faChevronUp, faChevronDown, faUndo, faRedo);
 
 import CipheredTextBundle from './ciphered_text_bundle';
 import FrequencyAnalysisBundle from './frequency_analysis_bundle';

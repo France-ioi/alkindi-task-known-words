@@ -773,6 +773,20 @@
     position: absolute;
     top: 10px;
   }
+
+  .transposition-controls {
+    display: flex;
+    justify-content: center;
+    padding-top: 0 !important;
+    svg {
+      margin: 0 10px;
+      cursor: pointer;
+      visibility: hidden;
+      &.is-visible {
+        visibility: initial;
+      }
+    }
+  }
 }
 
 .working-area {
