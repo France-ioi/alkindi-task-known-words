@@ -78,6 +78,7 @@ function appInitReducer (state, _action) {
     "acceptedAnswers": [],
     "usesRandomSeed": true,
     "autoHeight": true,
+    "minWidth": "auto",
   };
   return {...state, taskMetaData};
 }
