@@ -216,7 +216,7 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
 
 function generateTaskData (task) {
   const version = task.params.version || 1;
-  let {clearMessage, clearMessageWords, clearTextLength, randomSeed, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax, substitution: versionSubstitution} = versions[version];
+  let {clearMessage, clearMessageWords, clearTextLength, randomSeed, symbolsPerLine, extractedWordsCount, symbolsCountToUse, symbolsPerLetterMax, substitution: versionSubstitution, transposition} = versions[version];
 
   const rng0 = seedrandom(randomSeed ? randomSeed : task.random_seed + 16);
 
@@ -274,10 +274,12 @@ function generateTaskData (task) {
 
   const clearTextLines = cutTextIntoLines(clearText, symbolsPerLine);
 
-  const cipherTextSubstitution = applySubstitution(clearText, substitution, rng0);
+  let cipherText = applySubstitution(clearText, substitution, rng0);
 
-  const transposition = shuffle({random: rng0, deck: range(0, longestWordLength)}).cards;
-  const cipherText = applyTransposition(cipherTextSubstitution, transposition);
+  if (transposition) {
+    const generatedTransposition = shuffle({random: rng0, deck: range(0, longestWordLength)}).cards;
+    cipherText = applyTransposition(cipherText, generatedTransposition);
+  }
 
   const cipherTextLines = cutTextIntoLines(cipherText, symbolsPerLine);
 
