@@ -1058,10 +1058,10 @@
   dependencies:
     prop-types "^15.7.2"
 
-"@france-ioi/react-task-lib@^1.3.18":
-  version "1.3.18"
-  resolved "https://npm.pkg.github.com/download/@france-ioi/react-task-lib/1.3.18/2a63fa4947073585dfcc4b2484936fba9d49e1aec1b8e613c3e14e9acce4a755#772d276108c1e3b9bdb7f2bc98aa3f488137bce9"
-  integrity sha512-pLSlm7xIO3Tbrp67HctKO/BFFrfiQo/RKRyhPrEkCqltDjIcI5nOly8cgQlnjWLmZDt+StMZFNN8XwvEtZNHcA==
+"@france-ioi/react-task-lib@^1.3.21":
+  version "1.3.21"
+  resolved "https://npm.pkg.github.com/download/@france-ioi/react-task-lib/1.3.21/5ed9a76726aab586e700fa4775c871611a642eca525adb39ae9432ed8688e69c#e8e96bd1ca42dbf1f7f7834a780a40dc80d72da7"
+  integrity sha512-sZv1ik55UE9kWdn6fh369uGTtKKdWvWVmod05QXH1ES4tW96yZ4L6MWeaoqnx7lbxbbKGxZhooioP3CCClQLjQ==
 
 "@npmcli/move-file@^1.0.1":
   version "1.1.1"
