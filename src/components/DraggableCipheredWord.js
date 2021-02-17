@@ -9,7 +9,7 @@ function getStyles (isDragging) {
   };
 }
 
-export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemoved, draggingWord}) => {
+export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemoved, draggingWord, selected, onWordSelected}) => {
   const ref = useRef(null);
 
   const isActive = draggingWord && draggingWord.length === content.length;
@@ -36,8 +36,9 @@ export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemov
   return (
     <div
       ref={ref}
-      className={`draggable-word draggable-ciphered-word letter-cell ${isActive ? 'draggable-ciphered-word-matching' : ''}`}
+      className={`draggable-word draggable-ciphered-word letter-cell ${isActive ? 'draggable-ciphered-word-matching' : ''} ${selected ? 'is-selected' : ''}`}
       style={getStyles(isDragging)}
+      onClick={() => onWordSelected(rowIndex, wordIndex)}
     >
       <div className="draggable-word-handle">
         <svg x="0px" y="0px" width="10px" height="20px" viewBox="0 0 20 40" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -54,7 +55,7 @@ export const DraggableCipheredWord = ({rowIndex, wordIndex, content, onWordRemov
         </div>
         <div className="draggable-word-result">
           {range(0, content.length).map((letterIndex) =>
-            <div className={`draggable-word-letter ${content[letterIndex].hint ? 'is-hint' : (content[letterIndex].value ? 'is-value' : 'is-ciphered')}`} key={letterIndex}>
+            <div className={`draggable-word-letter-transposed ${content[letterIndex].hint ? 'is-hint' : (content[letterIndex].value ? 'is-value' : 'is-ciphered')}`} key={letterIndex}>
               {content[letterIndex].hint || content[letterIndex].value || content[letterIndex].result || ''}
             </div>
           )}

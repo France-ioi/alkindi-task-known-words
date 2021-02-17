@@ -571,7 +571,7 @@ class DecipheredTextView extends React.PureComponent {
                                 draggingWord={this.state.dragElement || clearWords[selectedWord]}
                               />
                               <div
-                                className={`deciphered-word-selectable ${selectedDecipheredWord && selectedDecipheredWord.rowIndex === rowIndex && selectedDecipheredWord.wordIndex === resultIndex ? 'deciphered-word-selected' : ''}`}
+                                className={`${version.transposition ? 'deciphered-word-selectable' : ''} ${selectedDecipheredWord && selectedDecipheredWord.rowIndex === rowIndex && selectedDecipheredWord.wordIndex === resultIndex ? 'deciphered-word-selected' : ''}`}
                                 style={{position: 'absolute', width: `calc(100% + 13px)`, height: `${linesHeight[rowIndex].height - 20 + 14}px`}}
                                 onClick={() => this.selectDecipheredWord(rowIndex, resultIndex)}
                               />
@@ -722,6 +722,8 @@ class DecipheredTextView extends React.PureComponent {
                           content={wordSlotsByRow[item.rowIndex][item.wordIndex].content}
                           onWordRemoved={this.onWordRemovedWorkingArea}
                           draggingWord={clearWords[selectedWord]}
+                          selected={selectedDecipheredWord && item.rowIndex === selectedDecipheredWord.rowIndex && item.wordIndex === selectedDecipheredWord.wordIndex}
+                          onWordSelected={this.selectDecipheredWord}
                         /> : null}
                       </div>
                     )}
@@ -746,19 +748,21 @@ class DecipheredTextView extends React.PureComponent {
                         style={{position: 'absolute', top: `${wordsRowHeight * rowIndex}px`, width: '100%', height: `${wordsRowHeight}px`}}
                       >
                         <div>
-                          {wordSlotsByRow[rowIndex].map(({position, content}, resultIndex) =>
+                          {wordSlotsByRow[rowIndex].map(({position, content}, wordIndex) =>
                             <div
-                              key={resultIndex}
+                              key={wordIndex}
                               className={`
                                 droppable-word-container
                               `}
-                              style={{position: 'absolute', left: `${position * cellWidth + (6 * resultIndex)}px`, top: '4px'}}
+                              style={{position: 'absolute', left: `${position * cellWidth + (6 * wordIndex)}px`, top: '4px'}}
                             >
                               <DraggableCipheredWord
                                 content={content}
                                 rowIndex={rowIndex}
-                                wordIndex={resultIndex}
+                                wordIndex={wordIndex}
                                 draggingWord={clearWords[selectedWord]}
+                                selected={selectedDecipheredWord && rowIndex === selectedDecipheredWord.rowIndex && wordIndex === selectedDecipheredWord.wordIndex}
+                                onWordSelected={this.selectDecipheredWord}
                               />
                             </div>
                           )}
@@ -825,6 +829,9 @@ class DecipheredTextView extends React.PureComponent {
     this.props.dispatch({type: this.props.decipheredWordSelected, payload: {wordIndex}});
   };
   selectDecipheredWord = (rowIndex, wordIndex) => {
+    if (!this.props.version.transposition) {
+      return;
+    }
     this.props.dispatch({type: this.props.decipheredDecipheredWordSelected, payload: {rowIndex, wordIndex}});
   };
   onDropWordWorkingArea = (item, coordinates) => {
