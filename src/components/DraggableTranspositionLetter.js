@@ -10,7 +10,7 @@ export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
     }),
-    hover (item, monitor) {
+    hover (item) {
       if (!ref.current) {
         return;
       }
@@ -19,17 +19,9 @@ export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}
       if (dragIndex === hoverIndex) {
         return;
       }
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 7;
-      const clientOffset = monitor.getClientOffset();
-      if (
-        (hoverIndex > dragIndex && clientOffset.x - hoverBoundingRect.left >= hoverMiddleX)
-        || (hoverIndex < dragIndex && hoverBoundingRect.right - clientOffset.x >= hoverMiddleX)
-      ) {
-        moveLetter(dragIndex, hoverIndex);
-        item.index = hoverIndex;
-      }
 
+      moveLetter(dragIndex, hoverIndex);
+      item.index = hoverIndex;
     },
   });
   const [{isDragging}, drag] = useDrag({
