@@ -779,14 +779,18 @@
   .transposition-controls {
     flex: 0 1;
     display: flex;
+    padding-left: 10px;
     justify-content: center;
     padding-top: 0 !important;
+    &.has-example {
+      padding-top: 15px !important;
+    }
     svg {
       margin: 0 10px;
       cursor: pointer;
-      visibility: hidden;
+      opacity: 0.25;
       &.is-visible {
-        visibility: initial;
+        opacity: 1;
       }
     }
   }

@@ -186,69 +186,69 @@ class TranspositionBundleView extends React.PureComponent {
               )}
             </div>
           </div>
-          {exampleWord && <div className="example">
-            <div style={{marginTop: '15px'}}>
-              <div>
-                Mot de départ
-              </div>
-              <div>
-                <div className="is-flex">
-                  {range(0, exampleWord.length).map(i =>
-                    <div className="transposition-letter letter-cell" key={i}>
-                      {exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_'}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div>
-              <div>
-                Ajout d'espaces
-              </div>
-              <div>
-                <div className="is-flex">
-                  {range(0, longestWordLength).map(i =>
-                    <div className="transposition-letter letter-cell" key={i}>
-                      {i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div>
-              <div>
-                Transposition
-              </div>
-              <div>
-                <div className="is-flex">
-                  {range(0, longestWordLength).map(i =>
-                    <div className="transposition-letter letter-cell" key={i}>
-                      {transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div>
-              <div>
-                Retrait des espaces
-              </div>
-              <div>
-                <div className="is-flex">
-                  {range(0, longestWordLength).map(i =>
-                    transposition[i] < exampleWord.length ? <div className="transposition-letter letter-cell" key={i}>
-                      {exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_'}
-                    </div> : null
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>}
-          <div className="transposition-controls">
+          <div className={`transposition-controls ${exampleWord ? 'has-example' : ''}`}>
             <FontAwesomeIcon icon="undo" onClick={this.undo} className={transpositionHistoryPosition > 0 ? "is-visible" : ""}/>
             <FontAwesomeIcon icon="redo" onClick={this.redo} className={transpositionHistoryPosition < transpositionHistory.length - 1 ? "is-visible" : ""}/>
           </div>
         </div>
+        {exampleWord && <div className="example">
+          <div style={{marginTop: '15px'}}>
+            <div>
+              Mot de départ
+            </div>
+            <div>
+              <div className="is-flex">
+                {range(0, exampleWord.length).map(i =>
+                  <div className="transposition-letter letter-cell" key={i}>
+                    {exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              Ajout d'espaces
+            </div>
+            <div>
+              <div className="is-flex">
+                {range(0, longestWordLength).map(i =>
+                  <div className="transposition-letter letter-cell" key={i}>
+                    {i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              Transposition
+            </div>
+            <div>
+              <div className="is-flex">
+                {range(0, longestWordLength).map(i =>
+                  <div className="transposition-letter letter-cell" key={i}>
+                    {transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              Retrait des espaces
+            </div>
+            <div>
+              <div className="is-flex">
+                {range(0, longestWordLength).map(i =>
+                  transposition[i] < exampleWord.length ? <div className="transposition-letter letter-cell" key={i}>
+                    {exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_'}
+                  </div> : null
+                )}
+              </div>
+            </div>
+          </div>
+        </div>}
 
         {!exampleWord && <p className="words-explanation">Sélectionnez un mot depuis l'outil "Déchiffrement" pour voir l'effet de la transposition sur ce mot.</p>}
       </div>
