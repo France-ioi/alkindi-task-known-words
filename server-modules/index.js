@@ -317,7 +317,8 @@ function generateTaskData (task) {
     clearTextLines,
   };
 
-  // console.log(publicData, privateData);
+  console.log({randomSeed: task.random_seed});
+  console.log(publicData, privateData);
 
   return {publicData, privateData};
 }
