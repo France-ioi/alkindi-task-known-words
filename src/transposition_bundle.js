@@ -13,7 +13,7 @@ function taskInitReducer (state) {
   return {
     ...state,
     transposition,
-    transpositionHistory: [transposition],
+    transpositionHistory: [{transposition, letterChanged: null}],
     transpositionHistoryPosition: 0,
     taskReady: true,
   };
@@ -38,14 +38,27 @@ function transpositionLetterMovedReducer (state, {payload: {oldPosition, newPosi
     ],
   });
 
+  const currentHistory = transpositionHistory.slice(0, transpositionHistoryPosition + 1);
+  let newTranspositionHistory;
+  let newTranspositionHistoryPosition = transpositionHistoryPosition;
+  if (currentHistory.length && currentHistory[currentHistory.length - 1].letterChanged === previousLetter) {
+    newTranspositionHistory = [
+      ...currentHistory.slice(0, currentHistory.length - 1),
+      {transposition: newTransposition, letterChanged: previousLetter},
+    ];
+  } else {
+    newTranspositionHistory = [
+      ...currentHistory,
+      {transposition: newTransposition, letterChanged: previousLetter},
+    ];
+    newTranspositionHistoryPosition++;
+  }
+
   return {
     ...state,
     transposition: newTransposition,
-    transpositionHistory: [
-      ...transpositionHistory.slice(0, transpositionHistoryPosition + 1),
-      newTransposition,
-    ],
-    transpositionHistoryPosition: transpositionHistoryPosition + 1,
+    transpositionHistory: newTranspositionHistory,
+    transpositionHistoryPosition: newTranspositionHistoryPosition,
   };
 }
 
@@ -54,7 +67,7 @@ function transpositionUndoReducer (state) {
 
   return {
     ...state,
-    transposition: transpositionHistory[transpositionHistoryPosition - 1],
+    transposition: transpositionHistory[transpositionHistoryPosition - 1].transposition,
     transpositionHistoryPosition: transpositionHistoryPosition - 1,
   };
 }
@@ -64,7 +77,7 @@ function transpositionRedoReducer (state) {
 
   return {
     ...state,
-    transposition: transpositionHistory[transpositionHistoryPosition + 1],
+    transposition: transpositionHistory[transpositionHistoryPosition + 1].transposition,
     transpositionHistoryPosition: transpositionHistoryPosition + 1,
   };
 }
@@ -127,113 +140,114 @@ class TranspositionBundleView extends React.PureComponent {
 
     return (
       <div className="transposition">
-        <div className="visual">
-          <div className="symbols">
-            {range(0, longestWordLength).map(i =>
-              <div className="original-letter letter-cell" key={i}>
-                {exampleWord && i < exampleWord.length ? (exampleWord[i].ciphered ? exampleWord[i].ciphered : '_') : ''}
-              </div>
-            )}
-          </div>
-          <div className="original">
-            {range(0, longestWordLength).map(i =>
-              <div className={`transposition-letter original-letter letter-cell ${exampleWord && i < exampleWord.length && exampleWord[i].substitutionResultLocked ? 'is-locked' : ''}`} key={i}>
-                {exampleWord && i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
-              </div>
-            )}
-            <div className="arrows">
-              <svg
-                width={`${longestWordLength * letterWidth}px`}
-                height={`${marginOriginDestination + letterWidth}px`}
-                viewBox={`0 0 ${longestWordLength * letterWidth} ${marginOriginDestination + letterWidth}`}
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {range(0, longestWordLength).map(i =>
-                  <path
-                    key={i}
-                    d={`M${paths[i].origin.x} ${paths[i].origin.y} L ${paths[i].destination.x} ${paths[i].destination.y}`}
-                    stroke="#88BB88"
-                    strokeWidth="2"
-                  />
-                )}
-              </svg>
+        <div className="transposition-container">
+          <div className="visual">
+            <div className="symbols">
+              {range(0, longestWordLength).map(i =>
+                <div className="original-letter letter-cell" key={i}>
+                  {exampleWord && i < exampleWord.length ? (exampleWord[i].ciphered ? exampleWord[i].ciphered : '_') : ''}
+                </div>
+              )}
             </div>
-          </div>
-          <div className="transposed">
-            {range(0, longestWordLength).map(i =>
-              <DraggableTranspositionLetter
-                key={transposition[i]}
-                index={i}
-                locked={exampleWord && transposition[i] < exampleWord.length && exampleWord[transposition[i]].substitutionResultLocked}
-                letter={exampleWord && transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
-                moveLetter={this.moveLetter}
-              />
-            )}
-          </div>
-        </div>
-        {exampleWord && <div className="example">
-          <div style={{marginTop: '15px'}}>
-            <div>
-              Mot de départ
-            </div>
-            <div>
-              <div className="is-flex">
-                {range(0, exampleWord.length).map(i =>
-                  <div className="transposition-letter letter-cell" key={i}>
-                    {exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_'}
-                  </div>
-                )}
+            <div className="original">
+              {range(0, longestWordLength).map(i =>
+                <div className={`transposition-letter original-letter letter-cell ${exampleWord && i < exampleWord.length && exampleWord[i].substitutionResultLocked ? 'is-locked' : ''}`} key={i}>
+                  {exampleWord && i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
+                </div>
+              )}
+              <div className="arrows">
+                <svg
+                  width={`${longestWordLength * letterWidth}px`}
+                  height={`${marginOriginDestination + letterWidth}px`}
+                  viewBox={`0 0 ${longestWordLength * letterWidth} ${marginOriginDestination + letterWidth}`}
+                  version="1.1"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {range(0, longestWordLength).map(i =>
+                    <path
+                      key={i}
+                      d={`M${paths[i].origin.x} ${paths[i].origin.y} L ${paths[i].destination.x} ${paths[i].destination.y}`}
+                      stroke="#88BB88"
+                      strokeWidth="2"
+                    />
+                  )}
+                </svg>
               </div>
             </div>
-          </div>
-          <div>
-            <div>
-              Ajout d'espaces
+            <div className="transposed">
+              {range(0, longestWordLength).map(i =>
+                <DraggableTranspositionLetter
+                  key={transposition[i]}
+                  index={i}
+                  locked={exampleWord && transposition[i] < exampleWord.length && exampleWord[transposition[i]].substitutionResultLocked}
+                  letter={exampleWord && transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
+                  moveLetter={this.moveLetter}
+                />
+              )}
             </div>
-            <div>
-              <div className="is-flex">
-                {range(0, longestWordLength).map(i =>
-                  <div className="transposition-letter letter-cell" key={i}>
-                    {i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
-                  </div>
-                )}
+          </div>
+          {exampleWord && <div className="example">
+            <div style={{marginTop: '15px'}}>
+              <div>
+                Mot de départ
+              </div>
+              <div>
+                <div className="is-flex">
+                  {range(0, exampleWord.length).map(i =>
+                    <div className="transposition-letter letter-cell" key={i}>
+                      {exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_'}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div>
             <div>
-              Transposition
-            </div>
-            <div>
-              <div className="is-flex">
-                {range(0, longestWordLength).map(i =>
-                  <div className="transposition-letter letter-cell" key={i}>
-                    {transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
-                  </div>
-                )}
+              <div>
+                Ajout d'espaces
+              </div>
+              <div>
+                <div className="is-flex">
+                  {range(0, longestWordLength).map(i =>
+                    <div className="transposition-letter letter-cell" key={i}>
+                      {i < exampleWord.length ? (exampleWord[i].substitutionResult ? exampleWord[i].substitutionResult : '_') : ''}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div>
             <div>
-              Retrait des espaces
-            </div>
-            <div>
-              <div className="is-flex">
-                {range(0, longestWordLength).map(i =>
-                  transposition[i] < exampleWord.length ? <div className="transposition-letter letter-cell" key={i}>
-                    {exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_'}
-                  </div> : null
-                )}
+              <div>
+                Transposition
+              </div>
+              <div>
+                <div className="is-flex">
+                  {range(0, longestWordLength).map(i =>
+                    <div className="transposition-letter letter-cell" key={i}>
+                      {transposition[i] < exampleWord.length ? (exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_') : ''}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+            <div>
+              <div>
+                Retrait des espaces
+              </div>
+              <div>
+                <div className="is-flex">
+                  {range(0, longestWordLength).map(i =>
+                    transposition[i] < exampleWord.length ? <div className="transposition-letter letter-cell" key={i}>
+                      {exampleWord[transposition[i]].substitutionResult ? exampleWord[transposition[i]].substitutionResult : '_'}
+                    </div> : null
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>}
+          <div className="transposition-controls">
+            <FontAwesomeIcon icon="undo" onClick={this.undo} className={transpositionHistoryPosition > 0 ? "is-visible" : ""}/>
+            <FontAwesomeIcon icon="redo" onClick={this.redo} className={transpositionHistoryPosition < transpositionHistory.length - 1 ? "is-visible" : ""}/>
           </div>
-        </div>}
-
-        <div className="transposition-controls">
-          <FontAwesomeIcon icon="undo" onClick={this.undo} className={transpositionHistoryPosition > 0 ? "is-visible" : ""}/>
-          <FontAwesomeIcon icon="redo" onClick={this.redo} className={transpositionHistoryPosition < transpositionHistory.length - 1 ? "is-visible" : ""}/>
         </div>
 
         {!exampleWord && <p className="words-explanation">Sélectionnez un mot depuis l'outil "Déchiffrement" pour voir l'effet de la transposition sur ce mot.</p>}
