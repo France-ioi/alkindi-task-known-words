@@ -153,7 +153,7 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
     let incorrect = false;
     let missing = false;
     for (let k = 0; k < line.length; k++) {
-      if (answerText[i].substring(k, k+1).trim().length) {
+      if (i in answerText && answerText[i].substring(k, k+1).trim().length) {
         if (line.substring(k, k+1) !== answerText[i].substring(k, k+1)) {
           incorrect = true;
         }
