@@ -12,9 +12,13 @@ export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}
   });
 
   const handleCardMove = React.useCallback((event) => {
-    const eventX = event.clientX || event.targetTouches[0].clientX;
+    let eventX = event.clientX;
     if (eventX === 0) {
-      return;
+      if (event.targetTouches && event.targetTouches.length && event.targetTouches[0].clientX) {
+        eventX = event.targetTouches[0].clientX;
+      } else {
+        return;
+      }
     }
     const slots = document.getElementsByClassName('transposition-slot');
     if (index > 0 && eventX <= slots[index - 1].getBoundingClientRect().right) {
