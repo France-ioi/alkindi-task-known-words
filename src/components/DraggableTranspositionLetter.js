@@ -4,25 +4,14 @@ import {useDrag, useDrop} from 'react-dnd';
 export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}) => {
   const ref = useRef(null);
 
+  let currentIndex = index;
+
   const [, drop] = useDrop({
     accept: 'transposition-letter',
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
     }),
-    hover (item) {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-
-      moveLetter(dragIndex, hoverIndex);
-      item.index = hoverIndex;
-    },
   });
   const [{isDragging}, drag] = useDrag({
     item: {type: 'transposition-letter', index},
@@ -30,6 +19,25 @@ export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}
       isDragging: monitor.isDragging(),
     }),
   });
+
+  const handleCardMove = React.useCallback((event) => {
+    const slots = document.getElementsByClassName('transposition-slot');
+    const eventX = event.clientX;
+    if (currentIndex > 0 && eventX <= slots[currentIndex - 1].getBoundingClientRect().right) {
+      moveLetter(currentIndex, currentIndex - 1);
+      currentIndex--;
+    }
+    if (currentIndex < slots.length - 1 && eventX >= slots[currentIndex + 1].getBoundingClientRect().left) {
+      moveLetter(currentIndex, currentIndex + 1);
+      currentIndex++;
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (isDragging) window.addEventListener("drag", handleCardMove);
+    else window.removeEventListener("drag", handleCardMove);
+    return () => window.removeEventListener("drag", handleCardMove);
+  }, [isDragging, handleCardMove]);
 
   const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
