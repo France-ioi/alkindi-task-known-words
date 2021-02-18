@@ -178,7 +178,7 @@ function applyRefreshedData (state) {
 
       if (
         (deciphered[position].hint && deciphered[position].hint !== cell.value)
-        || (deciphered[position].value && deciphered[position].value !== cell.value)
+        || (!deciphered[position].hint && deciphered[position].value && deciphered[position].value !== cell.value)
         || (rowIndex in wordsByRow && position in wordsByRow[rowIndex] && wordsByRow[rowIndex][position] !== cell.value)
       ) {
         return {
