@@ -260,11 +260,15 @@ class TranspositionBundleView extends React.PureComponent {
   };
 
   undo = () => {
-    this.props.dispatch({type: this.props.transpositionUndo});
+    if (this.props.transpositionHistoryPosition > 0) {
+      this.props.dispatch({type: this.props.transpositionUndo});
+    }
   };
 
   redo = () => {
-    this.props.dispatch({type: this.props.transpositionRedo});
+    if (this.props.transpositionHistoryPosition < this.props.transpositionHistory.length - 1) {
+      this.props.dispatch({type: this.props.transpositionRedo});
+    }
   };
 }
 
