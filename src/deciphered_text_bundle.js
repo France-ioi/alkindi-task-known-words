@@ -530,11 +530,11 @@ class DecipheredTextView extends React.PureComponent {
                         Mots placés
                       </div>
                       <div>
-                        {false !== version.transposition ? 'Résultat' : 'Substitution'}
+                        {String(version.version).substring(0, 2) === '3.' ? 'Résultat' : 'Substitution'}
                       </div>
                       {false !== version.clearTextLine &&
                         <div>
-                          Clair
+                          Réponse
                         </div>
                       }
                     </div>
