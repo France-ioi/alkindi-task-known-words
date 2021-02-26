@@ -67,7 +67,7 @@ function taskRefreshReducer (state) {
 function decipheredTextResizedReducer (state, {payload: {width}}) {
   let {decipheredText, taskData: {cipherTextLines}} = state;
   const maxLength = cipherTextLines.reduce((current, next) => Math.max(current, next.length), 0);
-  const pageColumns = Math.min(maxLength, Math.max(5, Math.floor((width - 20) / cellWidth)));
+  const pageColumns = Math.min(maxLength, Math.max(5, Math.floor((750 - 20) / cellWidth)));
 
   decipheredText = {...decipheredText, width, pageColumns};
 
