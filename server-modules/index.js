@@ -148,6 +148,8 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
 
   let correctLines = 0;
   let hasIncorrectLines = false;
+  let missingCount = 0;
+  let incorrectCount = 0;
   for (let i = 0; i < clearTextLines.length; i++) {
     const line = clearTextLines[i];
     let incorrect = false;
@@ -156,9 +158,11 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
       if (answerText[i].substring(k, k+1).trim().length) {
         if (line.substring(k, k+1) !== answerText[i].substring(k, k+1)) {
           incorrect = true;
+          incorrectCount++;
         }
       } else if (line.substring(k, k+1).trim().length) {
         missing = true;
+        missingCount++;
       }
     }
 
@@ -179,10 +183,17 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
   let score;
   let message;
 
-  if (correctLines === clearTextLines.length) {
+  if (correctLines === clearTextLines.length || (missingCount + incorrectCount) < 10) {
     const hintsCost = (hints1Count * 1) + (hints2Count * 10);
-    score = Math.max(0, 100 - hintsCost);
+    const errorsCost = (missingCount + incorrectCount) * 10;
+    score = Math.max(0, 100 - hintsCost - errorsCost);
     message = "Bravo, vous avez bien déchiffré le texte. ";
+    if (correctLines < clearTextLines.length) {
+      message = `Votre réponse contient ${missingCount + incorrectCount} erreur${missingCount + incorrectCount > 1 ? 's' : ''}, 
+      dont ${incorrectCount} lettre${incorrectCount > 1 ? 's' : ''} différente${incorrectCount > 1 ? 's' : ''} entre
+      votre texte déchiffré et le texte d'origine, et 
+      ${missingCount} lettre${missingCount > 1 ? 's' : ''} manquante${missingCount > 1 ? 's' : ''}. Chacune vous coûte 10 points. `;
+    }
     if (false !== version.hints) {
       if (!hintsCost) {
         message += "Vous n'avez pas demandé d'indice.";
@@ -200,11 +211,7 @@ module.exports.gradeAnswer = function (args, task_data, callback) {
     }
   } else {
     score = 0;
-    if (hasIncorrectLines) {
-      message = `Votre réponse contient au moins une erreur, c'est-à-dire au moins une lettre qui est différente entre votre texte déchiffré et le texte d'origine.`;
-    } else {
-      message = `Il manque au moins une lettre dans votre réponse.`;
-    }
+    message = `Votre réponse contient au moins 10 erreurs, qui peuvent être des lettres différentes entre votre texte déchiffré et le texte d'origine, ou des lettres manquantes.`;
   }
 
   callback(null, {score, message});
