@@ -1,5 +1,5 @@
 import React, {useRef} from 'react';
-import {useDrag} from 'react-dnd';
+import {useDrag, useDragLayer} from 'react-dnd';
 
 export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}) => {
   const ref = useRef(null);
@@ -11,41 +11,24 @@ export const DraggableTranspositionLetter = ({letter, index, moveLetter, locked}
     }),
   });
 
-  const handleCardMove = React.useCallback((event) => {
-    let eventX = event.clientX;
-    if (eventX === 0) {
-      if (event.targetTouches && event.targetTouches.length && event.targetTouches[0].clientX) {
-        eventX = event.targetTouches[0].clientX;
-      } else {
-        return;
-      }
-    }
-    const slots = document.getElementsByClassName('transposition-slot');
-    if (index > 0 && eventX <= slots[index - 1].getBoundingClientRect().right) {
-      moveLetter(index, index - 1);
-      index--;
-    }
-    if (index < slots.length - 1 && eventX >= slots[index + 1].getBoundingClientRect().left) {
-      moveLetter(index, index + 1);
-      index++;
-    }
-  }, [index]);
+  const {clientOffset} = useDragLayer((monitor) => ({
+    clientOffset: monitor.getClientOffset(),
+  }));
 
   React.useEffect(() => {
-    const supportsTouch = (('ontouchstart' in window) ||
-        (navigator.maxTouchPoints > 0) ||
-        (navigator.msMaxTouchPoints > 0));
-
     if (isDragging) {
-      window.addEventListener(supportsTouch ? 'touchmove' : 'drag', handleCardMove);
+      const clientOffsetX = clientOffset.x;
+      const slots = document.getElementsByClassName('transposition-slot');
+      if (index > 0 && clientOffsetX <= slots[index - 1].getBoundingClientRect().right) {
+        moveLetter(index, index - 1);
+        index--;
+      }
+      if (index < slots.length - 1 && clientOffsetX >= slots[index + 1].getBoundingClientRect().left) {
+        moveLetter(index, index + 1);
+        index++;
+      }
     }
-    else {
-      window.removeEventListener(supportsTouch ? 'touchmove' : 'drag', handleCardMove);
-    }
-    return () => {
-      window.removeEventListener(supportsTouch ? 'touchmove' : 'drag', handleCardMove);
-    };
-  }, [isDragging, handleCardMove]);
+  }, [isDragging, clientOffset ? clientOffset.x : null]);
 
   const opacity = isDragging ? 0 : 1;
   drag(ref);
