@@ -530,7 +530,7 @@ class DecipheredTextView extends React.PureComponent {
                         Mots placés
                       </div>
                       <div>
-                        {String(version.version).substring(0, 2) === '3.' ? 'Résultat' : 'Substitution'}
+                        {'3.2' === version.version ? 'Résultat' : 'Substitution'}
                       </div>
                       {false !== version.clearTextLine &&
                         <div>
@@ -692,7 +692,15 @@ class DecipheredTextView extends React.PureComponent {
         </div>
         {version.workingArea !== false &&
           <div className="main-block">
-            <Collapsable title={<div className="main-block-header">{"Plan de travail"}</div>}>
+            <Collapsable
+              title={<div className="main-block-header">{"Plan de travail"}</div>}
+              tutorial={
+                <Tutorial
+                  category="working-area"
+                  version={this.props.version}
+                />
+              }
+            >
               <div>
                 <div className="working-area">
                   <DroppableWordContainer

@@ -25,6 +25,9 @@ class Workspace extends React.PureComponent {
     const {
       CipheredText, FrequencyAnalysis, Substitution, Transposition, DecipheredText, HintRequestFeedback, Hints, version,
     } = this.props;
+
+    const versionId = String(version.version);
+
     return (
       <div>
         <DndProvider backend={MultiBackend} options={HTML5toTouch}>
@@ -59,12 +62,13 @@ class Workspace extends React.PureComponent {
                   </p>
                 </div>
               </div>}
-              {'2.3' === version.version && <div>
+              {('2.3' === version.version || '3.' === versionId.substring(0, 2)) && <div>
                 <p>
                   Un message a été chiffré par une <strong>substitution polyalphabétique</strong> : chaque lettre de l’alphabet a été remplacée par un symbole.
                 </p>
                 <p>
-                  <strong>Attention :</strong> Pour certaines lettres, <strong>trois symboles différents peuvent être utilisés</strong>. Dans ce cas, on choisit (au hasard) de remplacer la lettre parfois par un symbole, parfois par l’autre. Par exemple, si
+                  {'2.3' === version.version && <strong>Attention :</strong>}
+                  Pour certaines lettres, <strong>trois symboles différents peuvent être utilisés</strong>. Dans ce cas, on choisit (au hasard) de remplacer la lettre parfois par un symbole, parfois par l’autre. Par exemple, si
                 </p>
                 <ul>
                   <li>la lettre “I” peut s’écrire “$” ou “*”</li>
@@ -74,8 +78,12 @@ class Workspace extends React.PureComponent {
                   alors le mot “ICI” peut s’écrire de plusieurs manières différentes : “$#$”, “$@*”, “*#*”, “*%$”, etc.
                 </p>
               </div>}
+              {'3.2' === version.version && <p className="alert alert-warning">
+                En plus de la substitution, on a appliqué une transposition, c’est-à-dire que l’on a changé l’ordre des lettres de chaque mot, toujours selon la même règle.
+              </p>}
               <p>
-                On connaît une liste de mots qui sont présents dans le message. Vous pouvez glisser les mots connus dans la zone de déchiffrement. Un outil vous permet d'éditer la substitution de déchiffrement.
+                On connaît une liste de mots qui sont présents dans le message. Vous pouvez glisser les mots connus dans la zone de déchiffrement.
+                Un outil vous permet d'éditer la substitution de déchiffrement. {'3.2' === versionId && "Un autre outil vous permet d’éditer la transposition de dechiffrement."}
               </p>
               <p>
                 Retrouvez l'intégralité du message.
@@ -108,7 +116,15 @@ class Workspace extends React.PureComponent {
           }
           {this.props.version.frequencyAnalysis !== false &&
             <div className="main-block">
-              <Collapsable title={<div className="main-block-header" style={{zIndex: 8}}>{"Analyse de fréquence"}</div>}>
+              <Collapsable
+                title={<div className="main-block-header" style={{zIndex: 8}}>{"Analyse de fréquence"}</div>}
+                tutorial={
+                  <Tutorial
+                    category="frequency-analysis"
+                    version={this.props.version}
+                  />
+                }
+              >
                 <div style={{marginTop: '20px'}}>
                   <FrequencyAnalysis />
                 </div>
@@ -136,6 +152,12 @@ class Workspace extends React.PureComponent {
             <div className="main-block">
               <Collapsable
                 title={<div className="main-block-header">{"Transposition"}</div>}
+                tutorial={
+                  <Tutorial
+                    category="transposition"
+                    version={this.props.version}
+                  />
+                }
               >
                 <Transposition/>
               </Collapsable>
