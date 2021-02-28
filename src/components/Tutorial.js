@@ -115,7 +115,7 @@ export default class Tutorial extends React.PureComponent {
                 Vous pouvez cliquer sur un cadenas pour le fermer et indiquer ainsi que vous êtes sûrs de vous pour une lettre donnée. Le contenu d’une case dont le cadenas est fermé ne peut pas être modifié. Dans l’outil déchiffrement, toutes les lettres dont le cadenas est fermé apparaissent en gris. Vous pouvez cliquer de nouveau sur un cadenas pour le réouvrir.
               </p>
             </div>}
-            {('2.2' === versionId || '2.3' === versionId) && <div>
+            {('2.1' !== versionId) && <div>
               <p>
                 Sous chaque lettre de l’alphabet, vous pouvez glisser le (ou les) symboles qui doivent être déchiffrés en cette lettre. Pour cela, glissez un symbole depuis la liste des symboles restants. Vous pouvez aussi le retirer en le glissant vers la liste des symboles restants, ou le placer sous une autre lettre.
               </p>
